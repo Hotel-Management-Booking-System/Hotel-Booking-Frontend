@@ -25,7 +25,7 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   // Called when the user submits the login form
   onLogin(): void {
@@ -39,9 +39,9 @@ export class LoginComponent {
         this.authService.saveAuthData(response);
         this.successMessage = 'Login successful! Redirecting...';
         this.isLoading = false;
-
+        console.log(response);
         // Redirect admin to admin panel, users to hotels
-        if (response.role === 'Admin') {
+        if (response.role === '1') {
           this.router.navigate(['/admin/manage-hotels']);
         } else {
           this.router.navigate(['/hotels']);
