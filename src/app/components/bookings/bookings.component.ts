@@ -29,6 +29,7 @@ export class BookingsComponent implements OnInit {
   appliedPromo: Promotion | null = null;  // Applied promo
   totalAmount: number = 0;          // Calculated total
   nights: number = 0;               // Number of nights
+  hotelId: number = 0;
 
   errorMessage: string = '';
   successMessage: string = '';
@@ -44,13 +45,14 @@ export class BookingsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Read roomId from URL (e.g. /bookings/5)
+    // Read IDs from URL (api/bookings/:hotelId/:roomId)
+    this.hotelId = Number(this.route.snapshot.paramMap.get('hotelId'));
     this.bookingData.roomId = Number(this.route.snapshot.paramMap.get('roomId'));
     this.loadRoom();
   }
 
   loadRoom(): void {
-    this.roomService.getRoomById(this.bookingData.roomId).subscribe({
+    this.roomService.getRoomById(this.hotelId, this.bookingData.roomId).subscribe({
       next: (data) => {
         this.room = data;
       },

@@ -37,24 +37,4 @@ export class MyBookingsComponent implements OnInit {
     });
   }
 
-  // Cancel a booking
-  cancelBooking(id: number): void {
-    if (!confirm('Are you sure you want to cancel this booking?')) {
-      return;
-    }
-
-    this.bookingService.cancelBooking(id).subscribe({
-      next: () => {
-        this.successMessage = 'Booking cancelled successfully.';
-        // Update the status in the list without reloading
-        const booking = this.bookings.find(b => b.id === id);
-        if (booking) {
-          booking.status = 'Cancelled';
-        }
-      },
-      error: () => {
-        this.errorMessage = 'Failed to cancel booking. Please try again.';
-      }
-    });
-  }
 }

@@ -41,7 +41,7 @@ export class LoginComponent {
         this.isLoading = false;
         console.log(response);
         // Redirect admin to admin panel, users to hotels
-        if (response.role === '1') {
+        if (response.role === 1) { // 1 = Admin
           this.router.navigate(['/admin/manage-hotels']);
         } else {
           this.router.navigate(['/hotels']);

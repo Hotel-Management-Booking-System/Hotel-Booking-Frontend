@@ -26,7 +26,7 @@ export interface RegisterRequest {
 // Response from the server after successful login
 export interface AuthResponse {
   token: string;
-  role: string;
+  role: number;
   email: string;
   userId: number;
   fullName: string;

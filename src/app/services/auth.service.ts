@@ -27,7 +27,7 @@ export class AuthService {
   // Save auth data to localStorage after successful login
   saveAuthData(response: AuthResponse): void {
     localStorage.setItem('token', response.token);
-    localStorage.setItem('role', response.role);
+    localStorage.setItem('role', response.role.toString()); // Store as string
     localStorage.setItem('email', response.email);
     localStorage.setItem('userId', response.userId.toString());
     localStorage.setItem('fullName', response.fullName);
@@ -55,7 +55,7 @@ export class AuthService {
 
   // Check if the current user is an admin
   isAdmin(): boolean {
-    return this.getRole() === 'Admin';
+    return this.getRole() === '1'; // 1 = Admin enum value
   }
 
   // Get the current user's ID

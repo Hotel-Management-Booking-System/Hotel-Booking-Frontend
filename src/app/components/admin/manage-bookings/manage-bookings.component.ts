@@ -42,9 +42,9 @@ export class ManageBookingsComponent implements OnInit {
 
   // Change the status of a booking
   updateStatus(bookingId: number, newStatus: string): void {
-    const payload: UpdateBookingStatus = { status: newStatus };
+    const payload: UpdateBookingStatus = { bookingId, status: newStatus };
 
-    this.bookingService.updateBookingStatus(bookingId, payload).subscribe({
+    this.bookingService.updateBookingStatus(payload).subscribe({
       next: () => {
         this.successMessage = 'Booking status updated.';
         // Update in the list
@@ -59,17 +59,4 @@ export class ManageBookingsComponent implements OnInit {
     });
   }
 
-  deleteBooking(id: number): void {
-    if (!confirm('Delete this booking?')) return;
-
-    this.bookingService.deleteBooking(id).subscribe({
-      next: () => {
-        this.successMessage = 'Booking deleted.';
-        this.bookings = this.bookings.filter(b => b.id !== id);
-      },
-      error: () => {
-        this.errorMessage = 'Failed to delete booking.';
-      }
-    });
-  }
 }

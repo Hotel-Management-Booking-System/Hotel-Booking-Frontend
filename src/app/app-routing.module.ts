@@ -34,7 +34,7 @@ const routes: Routes = [
 
   // Protected routes - user must be logged in
   {
-    path: 'bookings/:roomId',
+    path: 'bookings/:hotelId/:roomId',
     component: BookingsComponent,
     canActivate: [AuthGuard]
   },
@@ -49,25 +49,25 @@ const routes: Routes = [
     path: 'admin/manage-hotels',
     component: ManageHotelsComponent,
     canActivate: [AuthGuard, RoleGuard],
-    data: { role: 'Admin' }
+    data: { role: '1' }
   },
   {
     path: 'admin/manage-rooms',
     component: ManageRoomsComponent,
     canActivate: [AuthGuard, RoleGuard],
-    data: { role: 'Admin' }
+    data: { role: '1' }
   },
   {
     path: 'admin/manage-bookings',
     component: ManageBookingsComponent,
     canActivate: [AuthGuard, RoleGuard],
-    data: { role: 'Admin' }
+    data: { role: '1' }
   },
   {
     path: 'admin/promotions',
     component: PromotionsComponent,
     canActivate: [AuthGuard, RoleGuard],
-    data: { role: 'Admin' }
+    data: { role: '1' }
   },
 
   // Catch-all wildcard - redirect unknown routes to home

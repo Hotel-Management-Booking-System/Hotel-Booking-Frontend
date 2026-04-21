@@ -46,6 +46,6 @@ export class RoomsComponent implements OnInit {
 
   // Navigate to the booking form for a selected room
   bookRoom(roomId: number): void {
-    this.router.navigate(['/bookings', roomId]);
+    this.router.navigate(['/bookings', this.hotelId, roomId]);
   }
 }

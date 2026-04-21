@@ -26,5 +26,6 @@ export interface CreateBooking {
 
 // Used when updating booking status (admin)
 export interface UpdateBookingStatus {
+  bookingId: number;
   status: string;
 }

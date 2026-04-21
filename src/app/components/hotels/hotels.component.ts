@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { HotelService } from '../../services/hotel.service';
 import { Hotel } from '../../models/hotel.model';
 
-// Hotels component - shows a list of all hotels with search by city.
 @Component({
   selector: 'app-hotels',
   templateUrl: './hotels.component.html',
@@ -11,18 +10,17 @@ import { Hotel } from '../../models/hotel.model';
 })
 export class HotelsComponent implements OnInit {
 
-  hotels: Hotel[] = [];         // List of hotels loaded from API
-  searchCity: string = '';       // City search input
+  hotels: Hotel[] = [];
+  searchCity: string = '';
   errorMessage: string = '';
   isLoading: boolean = false;
 
   constructor(
     private hotelService: HotelService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    // Load all hotels when the page opens
     this.loadHotels();
   }
 
@@ -42,7 +40,6 @@ export class HotelsComponent implements OnInit {
     });
   }
 
-  // Search hotels by the entered city
   searchHotels(): void {
     if (!this.searchCity.trim()) {
       this.loadHotels();
@@ -64,8 +61,7 @@ export class HotelsComponent implements OnInit {
     });
   }
 
-  // Navigate to the rooms page for the selected hotel
-  viewRooms(hotelId: number): void {
-    this.router.navigate(['/rooms', hotelId]);
+  viewRooms(id: number): void {
+    this.router.navigate(['/rooms', id]);
   }
 }

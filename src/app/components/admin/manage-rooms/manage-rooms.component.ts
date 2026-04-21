@@ -42,6 +42,7 @@ export class ManageRoomsComponent implements OnInit {
       pricePerNight: 0,
       maxOccupancy: 1,
       description: '',
+      features: '',
       imageUrl: '',
       isAvailable: true
     };
@@ -49,6 +50,7 @@ export class ManageRoomsComponent implements OnInit {
 
   loadRooms(): void {
     this.isLoading = true;
+    this.errorMessage = '';
 
     this.roomService.getAllRooms().subscribe({
       next: (data) => {
@@ -68,7 +70,6 @@ export class ManageRoomsComponent implements OnInit {
         this.hotels = data;
       },
       error: () => {
-        // Non-critical, just log
         console.error('Could not load hotels for dropdown');
       }
     });
@@ -90,6 +91,7 @@ export class ManageRoomsComponent implements OnInit {
       pricePerNight: room.pricePerNight,
       maxOccupancy: room.maxOccupancy,
       description: room.description,
+      features: room.features,
       imageUrl: room.imageUrl,
       isAvailable: room.isAvailable
     };
@@ -108,8 +110,13 @@ export class ManageRoomsComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
+    if (this.roomForm.hotelId === 0) {
+      this.errorMessage = 'Please select a hotel.';
+      return;
+    }
+
     if (this.isEditing) {
-      this.roomService.updateRoom(this.editingRoomId, this.roomForm).subscribe({
+      this.roomService.updateRoom(this.roomForm.hotelId, this.editingRoomId, this.roomForm).subscribe({
         next: () => {
           this.successMessage = 'Room updated successfully.';
           this.showForm = false;
@@ -120,7 +127,7 @@ export class ManageRoomsComponent implements OnInit {
         }
       });
     } else {
-      this.roomService.createRoom(this.roomForm).subscribe({
+      this.roomService.createRoom(this.roomForm.hotelId, this.roomForm).subscribe({
         next: () => {
           this.successMessage = 'Room created successfully.';
           this.showForm = false;
@@ -133,13 +140,13 @@ export class ManageRoomsComponent implements OnInit {
     }
   }
 
-  deleteRoom(id: number): void {
+  deleteRoom(hotelId: number, roomId: number): void {
     if (!confirm('Delete this room?')) return;
 
-    this.roomService.deleteRoom(id).subscribe({
+    this.roomService.deleteRoom(hotelId, roomId).subscribe({
       next: () => {
         this.successMessage = 'Room deleted.';
-        this.rooms = this.rooms.filter(r => r.id !== id);
+        this.rooms = this.rooms.filter(r => r.id !== roomId);
       },
       error: () => {
         this.errorMessage = 'Failed to delete room.';
