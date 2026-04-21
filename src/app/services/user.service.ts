@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { User } from '../models/user.model';
 import { Promotion, CreatePromotion } from '../models/promotion.model';
@@ -27,7 +28,7 @@ export class UserService {
 
   // Admin: Get all promotions
   getAllPromotions(): Observable<Promotion[]> {
-    return this.http.get<Promotion[]>(`${this.apiUrl}/promotions`);
+    return this.http.get<Promotion[]>(`${this.apiUrl}/promotions/all`);
   }
 
   // Admin: Create a new promotion

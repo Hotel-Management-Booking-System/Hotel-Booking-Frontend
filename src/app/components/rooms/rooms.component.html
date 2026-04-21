@@ -1,46 +1,59 @@
 <div class="page-container">
   <div class="page-header">
     <h1>Available Rooms</h1>
-    <p>Select a room and start your booking</p>
+    <p>Select a room and start your luxury stay</p>
     <a routerLink="/hotels" class="btn btn-outline">← Back to Hotels</a>
   </div>
 
-  <div class="loading" *ngIf="isLoading">Loading rooms...</div>
+  <!-- States -->
+  <div class="loading" *ngIf="isLoading">Finding the best rooms for you...</div>
   <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
 
   <div class="empty-state" *ngIf="!isLoading && rooms.length === 0 && !errorMessage">
-    <p>No rooms available for this hotel at the moment.</p>
+    <div class="empty-icon">🛏️</div>
+    <p>No rooms are available for this hotel right now.</p>
+    <a routerLink="/hotels" class="btn btn-primary">Check Other Hotels</a>
   </div>
 
-  <!-- Rooms grid -->
+  <!-- Rooms Grid -->
   <div class="rooms-grid" *ngIf="!isLoading && rooms.length > 0">
     <div class="room-card" *ngFor="let room of rooms">
-
-      <img [src]="room.imageUrl || 'assets/room-placeholder.jpg'" [alt]="room.roomType" class="room-image" />
+      <div class="room-image-container">
+        <img 
+          [src]="room.imageUrl || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80'" 
+          [alt]="room.roomType" 
+          class="room-image" 
+        />
+        <div class="room-price-tag">
+          ${{ room.pricePerNight }}<span>/night</span>
+        </div>
+      </div>
 
       <div class="room-body">
         <div class="room-header">
           <h3 class="room-number">Room {{ room.roomNumber }}</h3>
-          <span class="room-type badge">{{ room.roomType }}</span>
+          <span class="badge">{{ room.roomType }}</span>
         </div>
 
-        <p class="room-description">{{ room.description }}</p>
+        <p class="room-description">{{ room.description || 'A spacious and well-appointed room featuring modern amenities and elegant decor.' }}</p>
 
-        <div class="room-details">
-          <span>👥 Max {{ room.maxOccupancy }} guests</span>
-          <span class="room-price">💰 ${{ room.pricePerNight }} / night</span>
+        <div class="room-meta">
+          <div class="meta-item">
+            <span class="icon">👥</span>
+            <span>Max {{ room.maxOccupancy }} Guests</span>
+          </div>
+          <div class="meta-item">
+            <span class="status-indicator" [class.available]="room.isAvailable"></span>
+            <span>{{ room.isAvailable ? 'Available Now' : 'Currently Booked' }}</span>
+          </div>
         </div>
-
-        <!-- Availability badge -->
-        <span class="badge badge-success" *ngIf="room.isAvailable">✅ Available</span>
-        <span class="badge badge-danger" *ngIf="!room.isAvailable">❌ Not Available</span>
 
         <button
-          class="btn btn-primary btn-full"
+          class="btn btn-primary btn-full mt-3"
           (click)="bookRoom(room.id)"
           [disabled]="!room.isAvailable"
         >
-          Book Now
+          {{ room.isAvailable ? 'Book This Room' : 'Sold Out' }}
         </button>
       </div>
     </div>

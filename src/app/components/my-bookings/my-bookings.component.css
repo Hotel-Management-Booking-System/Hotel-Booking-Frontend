@@ -1,5 +1,119 @@
-/* My Bookings - uses global table styles */
-/* Status color overrides */
-:host {
-  display: block;
+.bookings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
 }
+
+@media (max-width: 600px) {
+  .bookings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.booking-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.booking-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(233, 69, 96, 0.5);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.booking-card-header {
+  padding: 1.5rem;
+  background: rgba(26, 39, 68, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hotel-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hotel-icon {
+  font-size: 1.5rem;
+}
+
+.hotel-info h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.booking-card-content {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.booking-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.booking-item:last-child {
+  margin-bottom: 0;
+}
+
+.booking-item .label {
+  color: #777;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.booking-item .value {
+  color: #ccc;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.booking-item .amount {
+  color: #e94560;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.booking-card-footer {
+  padding: 1.25rem 1.5rem;
+  background: rgba(13, 13, 26, 0.4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.booking-date {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.booking-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.status-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-pending { background: rgba(255, 193, 7, 0.1); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.2); }
+.status-confirmed { background: rgba(76, 175, 80, 0.1); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.2); }
+.status-cancelled { background: rgba(233, 69, 96, 0.1); color: #e94560; border: 1px solid rgba(233, 69, 96, 0.2); }
+.status-completed { background: rgba(33, 150, 243, 0.1); color: #2196f3; border: 1px solid rgba(33, 150, 243, 0.2); }
