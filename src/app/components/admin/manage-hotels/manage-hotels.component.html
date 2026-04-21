@@ -31,8 +31,8 @@
       </div>
 
       <div class="form-group">
-        <label>Address</label>
-        <input type="text" name="address" [(ngModel)]="hotelForm.address" placeholder="123 Main Street" required />
+        <label>Location/Address</label>
+        <input type="text" name="location" [(ngModel)]="hotelForm.location" placeholder="123 Main Street" required />
       </div>
 
       <div class="form-row">
@@ -48,13 +48,18 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Contact Email</label>
-          <input type="email" name="contactEmail" [(ngModel)]="hotelForm.contactEmail" placeholder="info@hotel.com" required />
+          <label>Email</label>
+          <input type="email" name="email" [(ngModel)]="hotelForm.email" placeholder="info@hotel.com" required />
         </div>
         <div class="form-group">
-          <label>Contact Phone</label>
-          <input type="tel" name="contactPhone" [(ngModel)]="hotelForm.contactPhone" placeholder="+1 234 567 8900" required />
+          <label>Phone Number</label>
+          <input type="tel" name="phoneNumber" [(ngModel)]="hotelForm.phoneNumber" placeholder="+1 234 567 8900" required />
         </div>
+      </div>
+
+      <div class="form-group">
+        <label>Amenities (comma-separated)</label>
+        <input type="text" name="amenities" [(ngModel)]="hotelForm.amenities" placeholder="WiFi, Pool, Parking" />
       </div>
 
       <div class="form-group">
@@ -62,15 +67,8 @@
         <input type="text" name="imageUrl" [(ngModel)]="hotelForm.imageUrl" placeholder="https://..." />
       </div>
 
-      <div class="form-group checkbox-group">
-        <label>
-          <input type="checkbox" name="isActive" [(ngModel)]="hotelForm.isActive" />
-          Active (visible to guests)
-        </label>
-      </div>
-
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">{{ isEditing ? 'Update Hotel' : 'Create Hotel' }}</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!hotelFormRef.form.valid">{{ isEditing ? 'Update Hotel' : 'Create Hotel' }}</button>
         <button type="button" class="btn btn-outline" (click)="cancelForm()">Cancel</button>
       </div>
     </form>
@@ -85,7 +83,6 @@
           <th>Name</th>
           <th>City</th>
           <th>Stars</th>
-          <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -95,10 +92,6 @@
           <td>{{ hotel.name }}</td>
           <td>{{ hotel.city }}, {{ hotel.country }}</td>
           <td>{{ '⭐'.repeat(hotel.starRating) }}</td>
-          <td>
-            <span class="badge badge-success" *ngIf="hotel.isActive">Active</span>
-            <span class="badge badge-danger" *ngIf="!hotel.isActive">Inactive</span>
-          </td>
           <td class="action-buttons">
             <button class="btn btn-sm btn-outline" (click)="openEditForm(hotel)">✏️ Edit</button>
             <button class="btn btn-sm btn-danger" (click)="deleteHotel(hotel.id)">🗑️ Delete</button>

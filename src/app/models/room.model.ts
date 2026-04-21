@@ -2,15 +2,15 @@
 export interface Room {
   id: number;
   hotelId: number;
-  hotelName?: string;
+  hotelName: string;
   roomNumber: string;
   roomType: string;         // e.g. Single, Double, Suite
   pricePerNight: number;
   maxOccupancy: number;
   description: string;
+  features: string;         // Backend uses comma-separated string
   imageUrl: string;
   isAvailable: boolean;
-  amenityIds?: number[];
 }
 
 // Used when creating or updating a room
@@ -21,7 +21,7 @@ export interface CreateRoom {
   pricePerNight: number;
   maxOccupancy: number;
   description: string;
+  features: string;
   imageUrl: string;
   isAvailable: boolean;
-  amenityIds?: number[];
 }

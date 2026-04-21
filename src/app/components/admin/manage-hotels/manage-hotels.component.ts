@@ -34,19 +34,20 @@ export class ManageHotelsComponent implements OnInit {
     return {
       name: '',
       description: '',
-      address: '',
+      location: '',
       city: '',
       country: '',
       starRating: 3,
-      imageUrl: '',
-      contactEmail: '',
-      contactPhone: '',
-      isActive: true
+      phoneNumber: '',
+      email: '',
+      amenities: '',
+      imageUrl: ''
     };
   }
 
   loadHotels(): void {
     this.isLoading = true;
+    this.errorMessage = '';
 
     this.hotelService.getAllHotels().subscribe({
       next: (data) => {
@@ -74,14 +75,14 @@ export class ManageHotelsComponent implements OnInit {
     this.hotelForm = {
       name: hotel.name,
       description: hotel.description,
-      address: hotel.address,
+      location: hotel.location,
       city: hotel.city,
       country: hotel.country,
       starRating: hotel.starRating,
-      imageUrl: hotel.imageUrl,
-      contactEmail: hotel.contactEmail,
-      contactPhone: hotel.contactPhone,
-      isActive: hotel.isActive
+      phoneNumber: hotel.phoneNumber,
+      email: hotel.email,
+      amenities: hotel.amenities.join(', '),
+      imageUrl: hotel.imageUrl
     };
     this.editingHotelId = hotel.id;
     this.isEditing = true;
