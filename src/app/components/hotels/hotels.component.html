@@ -1,57 +1,41 @@
 <div class="page-container">
-  <div class="page-header">
-    <h1>Explore Hotels</h1>
-    <p>Find your perfect destination</p>
-  </div>
 
-  <!-- Search bar -->
-  <div class="search-bar">
-    <input
-      type="text"
-      name="searchCity"
-      [(ngModel)]="searchCity"
-      placeholder="Search by city (e.g. Paris, Tokyo)..."
-      class="search-input"
-    />
-    <button class="btn btn-primary" (click)="searchHotels()">🔍 Search</button>
-    <button class="btn btn-outline" (click)="loadHotels()">Clear</button>
-  </div>
+  <h1>Explore Hotels</h1>
 
-  <!-- Loading indicator -->
-  <div class="loading" *ngIf="isLoading">Loading hotels...</div>
+  <!-- Search -->
+  <input [(ngModel)]="searchCity" placeholder="Search city..." />
+  <button (click)="searchHotels()">Search</button>
+  <button (click)="loadHotels()">Clear</button>
 
-  <!-- Error message -->
-  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <!-- Loading -->
+  <p *ngIf="isLoading">Loading...</p>
 
-  <!-- No results -->
-  <div class="empty-state" *ngIf="!isLoading && hotels.length === 0 && !errorMessage">
-    <p>No hotels found. Try a different city.</p>
-  </div>
+  <!-- Error -->
+  <p *ngIf="errorMessage">{{ errorMessage }}</p>
 
-  <!-- Hotels grid -->
-  <div class="hotels-grid" *ngIf="!isLoading && hotels.length > 0">
-    <div class="hotel-card" *ngFor="let hotel of hotels">
+  <!-- Hotels -->
+  <div *ngFor="let hotel of hotels" class="hotel-card">
 
-      <img [src]="hotel.imageUrl || 'assets/hotel-placeholder.jpg'" [alt]="hotel.name" class="hotel-image" />
+    <img [src]="hotel.imageUrl || 'assets/hotel-placeholder.jpg'"
+      (error)="hotel.imageUrl='assets/hotel-placeholder.jpg'" width="200" />
 
-      <div class="hotel-body">
-        <div class="hotel-header">
-          <h3 class="hotel-name">{{ hotel.name }}</h3>
-          <span class="hotel-stars">{{ '⭐'.repeat(hotel.starRating) }}</span>
-        </div>
+    <h3>{{ hotel.name }}</h3>
 
-        <p class="hotel-location">📍 {{ hotel.city }}, {{ hotel.country }}</p>
-        <p class="hotel-description">{{ hotel.description }}</p>
+    <p>📍 {{ hotel.city }}, {{ hotel.country }}</p>
 
-        <div class="hotel-contact">
-          <span>📞 {{ hotel.contactPhone }}</span>
-          <span>✉️ {{ hotel.contactEmail }}</span>
-        </div>
+    <!-- Safe fields -->
+    <p *ngIf="hotel.description">{{ hotel.description }}</p>
 
-        <button class="btn btn-primary btn-full" (click)="viewRooms(hotel.id)">
-          View Rooms →
-        </button>
-      </div>
+    <p *ngIf="hotel.location">📌 {{ hotel.location }}</p>
+
+    <!-- Amenities -->
+    <div *ngIf="hotel.amenities?.length">
+      <strong>Amenities:</strong>
+      <span *ngFor="let a of hotel.amenities"> {{ a }} </span>
     </div>
+
+    <button (click)="viewRooms(hotel.id)">View Rooms</button>
+
   </div>
+
 </div>
