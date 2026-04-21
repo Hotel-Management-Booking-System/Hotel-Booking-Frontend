@@ -1,0 +1,98 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Promotions</h1>
+    <p>Manage discount codes for guests</p>
+    <button class="btn btn-primary" (click)="openCreateForm()">+ Add Promotion</button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading...</div>
+
+  <!-- Create / Edit Promo Form -->
+  <div class="form-panel card" *ngIf="showForm">
+    <h3>{{ isEditing ? 'Edit Promotion' : 'New Promotion' }}</h3>
+
+    <form #promoFormRef="ngForm" (ngSubmit)="savePromotion()">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Promo Code</label>
+          <input type="text" name="code" [(ngModel)]="promoForm.code" placeholder="SUMMER20" required />
+        </div>
+        <div class="form-group">
+          <label>Discount (%)</label>
+          <input type="number" name="discountPercent" [(ngModel)]="promoForm.discountPercent" min="1" max="100" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" name="description" [(ngModel)]="promoForm.description" placeholder="Summer sale - 20% off" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" name="startDate" [(ngModel)]="promoForm.startDate" required />
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" name="endDate" [(ngModel)]="promoForm.endDate" required />
+        </div>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="isActive" [(ngModel)]="promoForm.isActive" />
+          Active (usable by guests)
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ isEditing ? 'Update' : 'Create' }} Promotion</button>
+        <button type="button" class="btn btn-outline" (click)="cancelForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Promotions Table -->
+  <div class="table-container" *ngIf="!isLoading && promotions.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Code</th>
+          <th>Description</th>
+          <th>Discount</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let promo of promotions; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td><strong class="promo-code">{{ promo.code }}</strong></td>
+          <td>{{ promo.description }}</td>
+          <td>{{ promo.discountPercent }}%</td>
+          <td>{{ promo.startDate | date:'mediumDate' }}</td>
+          <td>{{ promo.endDate | date:'mediumDate' }}</td>
+          <td>
+            <span class="badge badge-success" *ngIf="promo.isActive">Yes</span>
+            <span class="badge badge-danger" *ngIf="!promo.isActive">No</span>
+          </td>
+          <td class="action-buttons">
+            <button class="btn btn-sm btn-outline" (click)="openEditForm(promo)">✏️ Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deletePromotion(promo.id)">🗑️ Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && promotions.length === 0 && !errorMessage">
+    <p>No promotions yet. Click "Add Promotion" to create one.</p>
+  </div>
+</div>

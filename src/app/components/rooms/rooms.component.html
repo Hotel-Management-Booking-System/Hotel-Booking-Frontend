@@ -1,0 +1,48 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Available Rooms</h1>
+    <p>Select a room and start your booking</p>
+    <a routerLink="/hotels" class="btn btn-outline">← Back to Hotels</a>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Loading rooms...</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="empty-state" *ngIf="!isLoading && rooms.length === 0 && !errorMessage">
+    <p>No rooms available for this hotel at the moment.</p>
+  </div>
+
+  <!-- Rooms grid -->
+  <div class="rooms-grid" *ngIf="!isLoading && rooms.length > 0">
+    <div class="room-card" *ngFor="let room of rooms">
+
+      <img [src]="room.imageUrl || 'assets/room-placeholder.jpg'" [alt]="room.roomType" class="room-image" />
+
+      <div class="room-body">
+        <div class="room-header">
+          <h3 class="room-number">Room {{ room.roomNumber }}</h3>
+          <span class="room-type badge">{{ room.roomType }}</span>
+        </div>
+
+        <p class="room-description">{{ room.description }}</p>
+
+        <div class="room-details">
+          <span>👥 Max {{ room.maxOccupancy }} guests</span>
+          <span class="room-price">💰 ${{ room.pricePerNight }} / night</span>
+        </div>
+
+        <!-- Availability badge -->
+        <span class="badge badge-success" *ngIf="room.isAvailable">✅ Available</span>
+        <span class="badge badge-danger" *ngIf="!room.isAvailable">❌ Not Available</span>
+
+        <button
+          class="btn btn-primary btn-full"
+          (click)="bookRoom(room.id)"
+          [disabled]="!room.isAvailable"
+        >
+          Book Now
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

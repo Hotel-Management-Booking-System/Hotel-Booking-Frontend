@@ -1,0 +1,5 @@
+/* My Bookings - uses global table styles */
+/* Status color overrides */
+:host {
+  display: block;
+}

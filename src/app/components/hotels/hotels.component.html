@@ -1,0 +1,57 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Explore Hotels</h1>
+    <p>Find your perfect destination</p>
+  </div>
+
+  <!-- Search bar -->
+  <div class="search-bar">
+    <input
+      type="text"
+      name="searchCity"
+      [(ngModel)]="searchCity"
+      placeholder="Search by city (e.g. Paris, Tokyo)..."
+      class="search-input"
+    />
+    <button class="btn btn-primary" (click)="searchHotels()">🔍 Search</button>
+    <button class="btn btn-outline" (click)="loadHotels()">Clear</button>
+  </div>
+
+  <!-- Loading indicator -->
+  <div class="loading" *ngIf="isLoading">Loading hotels...</div>
+
+  <!-- Error message -->
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <!-- No results -->
+  <div class="empty-state" *ngIf="!isLoading && hotels.length === 0 && !errorMessage">
+    <p>No hotels found. Try a different city.</p>
+  </div>
+
+  <!-- Hotels grid -->
+  <div class="hotels-grid" *ngIf="!isLoading && hotels.length > 0">
+    <div class="hotel-card" *ngFor="let hotel of hotels">
+
+      <img [src]="hotel.imageUrl || 'assets/hotel-placeholder.jpg'" [alt]="hotel.name" class="hotel-image" />
+
+      <div class="hotel-body">
+        <div class="hotel-header">
+          <h3 class="hotel-name">{{ hotel.name }}</h3>
+          <span class="hotel-stars">{{ '⭐'.repeat(hotel.starRating) }}</span>
+        </div>
+
+        <p class="hotel-location">📍 {{ hotel.city }}, {{ hotel.country }}</p>
+        <p class="hotel-description">{{ hotel.description }}</p>
+
+        <div class="hotel-contact">
+          <span>📞 {{ hotel.contactPhone }}</span>
+          <span>✉️ {{ hotel.contactEmail }}</span>
+        </div>
+
+        <button class="btn btn-primary btn-full" (click)="viewRooms(hotel.id)">
+          View Rooms →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,114 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Manage Hotels</h1>
+    <p>Create, edit and delete hotels</p>
+    <button class="btn btn-primary" (click)="openCreateForm()">+ Add Hotel</button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading...</div>
+
+  <!-- Create / Edit Form (shown inline) -->
+  <div class="form-panel card" *ngIf="showForm">
+    <h3>{{ isEditing ? 'Edit Hotel' : 'Add New Hotel' }}</h3>
+
+    <form #hotelFormRef="ngForm" (ngSubmit)="saveHotel()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hotel Name</label>
+          <input type="text" name="name" [(ngModel)]="hotelForm.name" placeholder="Grand Palace Hotel" required />
+        </div>
+        <div class="form-group">
+          <label>Star Rating (1-5)</label>
+          <input type="number" name="starRating" [(ngModel)]="hotelForm.starRating" min="1" max="5" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" [(ngModel)]="hotelForm.description" rows="3" placeholder="Describe the hotel..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" name="address" [(ngModel)]="hotelForm.address" placeholder="123 Main Street" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" name="city" [(ngModel)]="hotelForm.city" placeholder="Paris" required />
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <input type="text" name="country" [(ngModel)]="hotelForm.country" placeholder="France" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Contact Email</label>
+          <input type="email" name="contactEmail" [(ngModel)]="hotelForm.contactEmail" placeholder="info@hotel.com" required />
+        </div>
+        <div class="form-group">
+          <label>Contact Phone</label>
+          <input type="tel" name="contactPhone" [(ngModel)]="hotelForm.contactPhone" placeholder="+1 234 567 8900" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Image URL</label>
+        <input type="text" name="imageUrl" [(ngModel)]="hotelForm.imageUrl" placeholder="https://..." />
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="isActive" [(ngModel)]="hotelForm.isActive" />
+          Active (visible to guests)
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ isEditing ? 'Update Hotel' : 'Create Hotel' }}</button>
+        <button type="button" class="btn btn-outline" (click)="cancelForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Hotels Table -->
+  <div class="table-container" *ngIf="!isLoading && hotels.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>City</th>
+          <th>Stars</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let hotel of hotels; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ hotel.name }}</td>
+          <td>{{ hotel.city }}, {{ hotel.country }}</td>
+          <td>{{ '⭐'.repeat(hotel.starRating) }}</td>
+          <td>
+            <span class="badge badge-success" *ngIf="hotel.isActive">Active</span>
+            <span class="badge badge-danger" *ngIf="!hotel.isActive">Inactive</span>
+          </td>
+          <td class="action-buttons">
+            <button class="btn btn-sm btn-outline" (click)="openEditForm(hotel)">✏️ Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteHotel(hotel.id)">🗑️ Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && hotels.length === 0 && !errorMessage">
+    <p>No hotels yet. Click "Add Hotel" to create one.</p>
+  </div>
+</div>

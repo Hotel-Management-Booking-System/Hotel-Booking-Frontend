@@ -1,0 +1,119 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Manage Rooms</h1>
+    <p>Create, edit and delete rooms across all hotels</p>
+    <button class="btn btn-primary" (click)="openCreateForm()">+ Add Room</button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading...</div>
+
+  <!-- Create / Edit Form -->
+  <div class="form-panel card" *ngIf="showForm">
+    <h3>{{ isEditing ? 'Edit Room' : 'Add New Room' }}</h3>
+
+    <form #roomFormRef="ngForm" (ngSubmit)="saveRoom()">
+
+      <div class="form-group">
+        <label>Hotel</label>
+        <select name="hotelId" [(ngModel)]="roomForm.hotelId" required>
+          <option value="0" disabled>-- Select Hotel --</option>
+          <option *ngFor="let hotel of hotels" [value]="hotel.id">{{ hotel.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Room Number</label>
+          <input type="text" name="roomNumber" [(ngModel)]="roomForm.roomNumber" placeholder="101" required />
+        </div>
+        <div class="form-group">
+          <label>Room Type</label>
+          <select name="roomType" [(ngModel)]="roomForm.roomType" required>
+            <option value="">-- Select Type --</option>
+            <option value="Single">Single</option>
+            <option value="Double">Double</option>
+            <option value="Twin">Twin</option>
+            <option value="Suite">Suite</option>
+            <option value="Deluxe">Deluxe</option>
+            <option value="Family">Family</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price Per Night ($)</label>
+          <input type="number" name="pricePerNight" [(ngModel)]="roomForm.pricePerNight" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Max Occupancy</label>
+          <input type="number" name="maxOccupancy" [(ngModel)]="roomForm.maxOccupancy" min="1" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" [(ngModel)]="roomForm.description" rows="3" placeholder="Room details..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Image URL</label>
+        <input type="text" name="imageUrl" [(ngModel)]="roomForm.imageUrl" placeholder="https://..." />
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="isAvailable" [(ngModel)]="roomForm.isAvailable" />
+          Available for booking
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ isEditing ? 'Update Room' : 'Create Room' }}</button>
+        <button type="button" class="btn btn-outline" (click)="cancelForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Rooms Table -->
+  <div class="table-container" *ngIf="!isLoading && rooms.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Hotel</th>
+          <th>Room No.</th>
+          <th>Type</th>
+          <th>Price/Night</th>
+          <th>Occupancy</th>
+          <th>Available</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let room of rooms; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ room.hotelName || room.hotelId }}</td>
+          <td>{{ room.roomNumber }}</td>
+          <td><span class="badge">{{ room.roomType }}</span></td>
+          <td>${{ room.pricePerNight }}</td>
+          <td>{{ room.maxOccupancy }}</td>
+          <td>
+            <span class="badge badge-success" *ngIf="room.isAvailable">Yes</span>
+            <span class="badge badge-danger" *ngIf="!room.isAvailable">No</span>
+          </td>
+          <td class="action-buttons">
+            <button class="btn btn-sm btn-outline" (click)="openEditForm(room)">✏️ Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteRoom(room.id)">🗑️ Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && rooms.length === 0 && !errorMessage">
+    <p>No rooms yet. Click "Add Room" to create one.</p>
+  </div>
+</div>

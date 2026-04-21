@@ -1,0 +1,94 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Book Your Room</h1>
+    <p>Fill in the details below to confirm your stay</p>
+  </div>
+
+  <!-- Room Summary -->
+  <div class="booking-layout">
+    <div class="room-summary card" *ngIf="room">
+      <img [src]="room.imageUrl || 'assets/room-placeholder.jpg'" [alt]="room.roomType" class="summary-image" />
+      <h3>Room {{ room.roomNumber }} — {{ room.roomType }}</h3>
+      <p>{{ room.description }}</p>
+      <p>👥 Max {{ room.maxOccupancy }} guests</p>
+      <p class="price-per-night">💰 ${{ room.pricePerNight }} / night</p>
+
+      <!-- Total amount display -->
+      <div class="total-box" *ngIf="nights > 0">
+        <p>📅 {{ nights }} night(s)</p>
+        <p class="total-amount">Total: ${{ totalAmount | number:'1.2-2' }}</p>
+        <p class="promo-applied" *ngIf="appliedPromo">
+          🎉 Promo applied: {{ appliedPromo.discountPercent }}% off
+        </p>
+      </div>
+    </div>
+
+    <!-- Booking Form -->
+    <div class="booking-form card">
+      <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+      <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <form #bookingForm="ngForm" (ngSubmit)="onBook()">
+
+        <div class="form-group">
+          <label for="checkIn">Check-In Date</label>
+          <input
+            type="date"
+            id="checkIn"
+            name="checkIn"
+            [(ngModel)]="bookingData.checkInDate"
+            (change)="calculateTotal()"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="checkOut">Check-Out Date</label>
+          <input
+            type="date"
+            id="checkOut"
+            name="checkOut"
+            [(ngModel)]="bookingData.checkOutDate"
+            (change)="calculateTotal()"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="specialRequests">Special Requests (Optional)</label>
+          <textarea
+            id="specialRequests"
+            name="specialRequests"
+            [(ngModel)]="bookingData.specialRequests"
+            rows="3"
+            placeholder="Late check-in, extra pillows, etc."
+          ></textarea>
+        </div>
+
+        <!-- Promo code section -->
+        <div class="promo-section">
+          <label for="promoCode">Promo Code (Optional)</label>
+          <div class="promo-row">
+            <input
+              type="text"
+              id="promoCode"
+              name="promoCode"
+              [(ngModel)]="promoCode"
+              placeholder="Enter promo code"
+            />
+            <button type="button" class="btn btn-outline" (click)="applyPromo()">Apply</button>
+          </div>
+          <span class="alert alert-error small" *ngIf="promoError">{{ promoError }}</span>
+          <span class="alert alert-success small" *ngIf="appliedPromo">
+            ✅ Code "{{ appliedPromo.code }}" applied — {{ appliedPromo.discountPercent }}% off
+          </span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Confirm Booking</span>
+          <span *ngIf="isLoading">Processing...</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,58 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Manage Bookings</h1>
+    <p>View all reservations and update their status</p>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading bookings...</div>
+
+  <div class="empty-state" *ngIf="!isLoading && bookings.length === 0 && !errorMessage">
+    <p>No bookings found in the system.</p>
+  </div>
+
+  <!-- Bookings Table -->
+  <div class="table-container" *ngIf="!isLoading && bookings.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Guest</th>
+          <th>Hotel</th>
+          <th>Room</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let booking of bookings; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ booking.userName || 'User #' + booking.userId }}</td>
+          <td>{{ booking.hotelName || 'N/A' }}</td>
+          <td>{{ booking.roomNumber || booking.roomId }}</td>
+          <td>{{ booking.checkInDate | date:'mediumDate' }}</td>
+          <td>{{ booking.checkOutDate | date:'mediumDate' }}</td>
+          <td>${{ booking.totalAmount | number:'1.2-2' }}</td>
+          <td>
+            <!-- Status dropdown for quick update -->
+            <select
+              class="status-select"
+              [ngModel]="booking.status"
+              (change)="updateStatus(booking.id, $any($event.target).value)"
+              [ngClass]="'status-' + booking.status.toLowerCase()"
+            >
+              <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+            </select>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-danger" (click)="deleteBooking(booking.id)">🗑️ Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

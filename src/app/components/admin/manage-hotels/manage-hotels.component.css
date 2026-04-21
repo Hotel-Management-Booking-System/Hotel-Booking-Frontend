@@ -1,0 +1,4 @@
+/* Admin components use global styles */
+:host {
+  display: block;
+}

@@ -1,0 +1,59 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>My Bookings</h1>
+    <p>View and manage your hotel reservations</p>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="loading" *ngIf="isLoading">Loading your bookings...</div>
+
+  <div class="empty-state" *ngIf="!isLoading && bookings.length === 0 && !errorMessage">
+    <p>You have no bookings yet.</p>
+    <a routerLink="/hotels" class="btn btn-primary">Browse Hotels</a>
+  </div>
+
+  <!-- Bookings table -->
+  <div class="table-container" *ngIf="!isLoading && bookings.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Hotel</th>
+          <th>Room</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let booking of bookings; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ booking.hotelName || 'N/A' }}</td>
+          <td>{{ booking.roomNumber || booking.roomId }}</td>
+          <td>{{ booking.checkInDate | date:'mediumDate' }}</td>
+          <td>{{ booking.checkOutDate | date:'mediumDate' }}</td>
+          <td>${{ booking.totalAmount | number:'1.2-2' }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="'status-' + booking.status.toLowerCase()">
+              {{ booking.status }}
+            </span>
+          </td>
+          <td>
+            <button
+              class="btn btn-danger btn-sm"
+              (click)="cancelBooking(booking.id)"
+              *ngIf="booking.status === 'Pending' || booking.status === 'Confirmed'"
+            >
+              Cancel
+            </button>
+            <span *ngIf="booking.status === 'Cancelled' || booking.status === 'Completed'">—</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

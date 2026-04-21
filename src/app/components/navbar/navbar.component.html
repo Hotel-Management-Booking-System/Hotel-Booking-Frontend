@@ -1,0 +1,41 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span class="brand-icon">🏨</span>
+    <a routerLink="/home" class="brand-name">StayEase</a>
+  </div>
+
+  <ul class="navbar-links">
+    <li><a routerLink="/home" routerLinkActive="active">Home</a></li>
+    <li><a routerLink="/hotels" routerLinkActive="active">Hotels</a></li>
+
+    <!-- Show only when logged in as a regular user -->
+    <li *ngIf="authService.isLoggedIn() && !authService.isAdmin()">
+      <a routerLink="/my-bookings" routerLinkActive="active">My Bookings</a>
+    </li>
+
+    <!-- Show only when logged in as Admin -->
+    <li *ngIf="authService.isAdmin()" class="dropdown">
+      <span class="dropdown-toggle">Admin ▾</span>
+      <ul class="dropdown-menu">
+        <li><a routerLink="/admin/manage-hotels">Manage Hotels</a></li>
+        <li><a routerLink="/admin/manage-rooms">Manage Rooms</a></li>
+        <li><a routerLink="/admin/manage-bookings">Manage Bookings</a></li>
+        <li><a routerLink="/admin/promotions">Promotions</a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <div class="navbar-auth">
+    <!-- Show when NOT logged in -->
+    <ng-container *ngIf="!authService.isLoggedIn()">
+      <a routerLink="/login" class="btn btn-outline">Login</a>
+      <a routerLink="/register" class="btn btn-primary">Register</a>
+    </ng-container>
+
+    <!-- Show when logged in -->
+    <ng-container *ngIf="authService.isLoggedIn()">
+      <span class="user-greeting">👋 {{ authService.getFirstName() }}</span>
+      <button class="btn btn-outline" (click)="logout()">Logout</button>
+    </ng-container>
+  </div>
+</nav>
