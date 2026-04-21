@@ -12,40 +12,26 @@ export class BookingService {
 
   private apiUrl = `${environment.apiUrl}/bookings`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Create a new booking (logged-in user)
-  createBooking(booking: CreateBooking): Observable<Booking> {
-    return this.http.post<Booking>(this.apiUrl, booking);
+  // ✅ Create booking
+  createBooking(booking: CreateBooking): Observable<any> {
+    return this.http.post(this.apiUrl, booking);
   }
 
-  // Get all bookings for the current logged-in user
+  // ✅ Get current user bookings
   getMyBookings(): Observable<Booking[]> {
-    return this.http.get<Booking[]>(`${this.apiUrl}/my`);
+    return this.http.get<Booking[]>(`${this.apiUrl}/my-bookings`);
   }
 
-  // Cancel a booking by ID (user)
-  cancelBooking(id: number): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}/cancel`, {});
-  }
-
-  // Admin: Get all bookings in the system
+  // ✅ Admin: Get all bookings
   getAllBookings(): Observable<Booking[]> {
-    return this.http.get<Booking[]>(this.apiUrl);
+    return this.http.get<Booking[]>(`${this.apiUrl}/all`);
   }
 
-  // Admin: Update the status of a booking
-  updateBookingStatus(id: number, status: UpdateBookingStatus): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}/status`, status);
-  }
-
-  // Admin: Delete a booking
-  deleteBooking(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}`);
-  }
-
-  // Get a single booking by ID
-  getBookingById(id: number): Observable<Booking> {
-    return this.http.get<Booking>(`${this.apiUrl}/${id}`);
+  // ✅ Admin: Update booking status
+  updateBookingStatus(dto: UpdateBookingStatus): Observable<any> {
+    return this.http.put(`${this.apiUrl}/status`, dto);
   }
 }
+
