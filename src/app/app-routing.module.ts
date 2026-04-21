@@ -34,7 +34,7 @@ const routes: Routes = [
 
   // Protected routes - user must be logged in
   {
-    path: 'bookings/:roomId',
+    path: 'bookings/:hotelId/:roomId',
     component: BookingsComponent,
     canActivate: [AuthGuard]
   },
