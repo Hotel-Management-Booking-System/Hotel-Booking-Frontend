@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { Hotel, CreateHotel } from '../models/hotel.model';
+import { Hotel } from '../models/hotel.model';
 
-// HotelService handles all API calls related to hotels (read + admin CRUD).
 @Injectable({
   providedIn: 'root'
 })
@@ -12,35 +12,63 @@ export class HotelService {
 
   private apiUrl = `${environment.apiUrl}/hotels`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Get all hotels (public)
+  // 🔐 JWT
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+  }
+
+  // 🔥 Normalize BOTH response types
+  private mapHotel(h: any): Hotel {
+    return {
+      id: h.id,
+      name: h.name,
+      city: h.city,
+      country: h.country,
+      location: h.location,
+      description: h.description,
+      imageUrl: h.imageUrl,
+
+      // ✅ Handle BOTH formats
+      amenities: Array.isArray(h.amenities)
+        ? (typeof h.amenities[0] === 'string'
+          ? h.amenities
+          : h.amenities.map((a: any) => a.name))
+        : []
+    };
+  }
+
+  // ✅ GET ALL
   getAllHotels(): Observable<Hotel[]> {
-    return this.http.get<Hotel[]>(this.apiUrl);
+    return this.http.get<any[]>(this.apiUrl, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(res => res.map(h => this.mapHotel(h)))
+    );
   }
 
-  // Get a single hotel by its ID
+  // ✅ GET BY ID
   getHotelById(id: number): Observable<Hotel> {
-    return this.http.get<Hotel>(`${this.apiUrl}/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(h => this.mapHotel(h))
+    );
   }
 
-  // Search hotels by city
-  searchHotelsByCity(city: string): Observable<Hotel[]> {
-    return this.http.get<Hotel[]>(`${this.apiUrl}?city=${city}`);
-  }
+  // ✅ SEARCH
+  searchHotels(city: string): Observable<Hotel[]> {
+    let params = new HttpParams().set('city', city);
 
-  // Admin: Create a new hotel
-  createHotel(hotel: CreateHotel): Observable<Hotel> {
-    return this.http.post<Hotel>(this.apiUrl, hotel);
-  }
-
-  // Admin: Update an existing hotel
-  updateHotel(id: number, hotel: CreateHotel): Observable<Hotel> {
-    return this.http.put<Hotel>(`${this.apiUrl}/${id}`, hotel);
-  }
-
-  // Admin: Delete a hotel
-  deleteHotel(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+    return this.http.get<any[]>(`${this.apiUrl}/search`, {
+      headers: this.getHeaders(),
+      params
+    }).pipe(
+      map(res => res.map(h => this.mapHotel(h)))
+    );
   }
 }

@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { HotelService } from '../../services/hotel.service';
 import { Hotel } from '../../models/hotel.model';
 
-// Hotels component - shows a list of all hotels with search by city.
 @Component({
   selector: 'app-hotels',
   templateUrl: './hotels.component.html',
@@ -11,18 +10,17 @@ import { Hotel } from '../../models/hotel.model';
 })
 export class HotelsComponent implements OnInit {
 
-  hotels: Hotel[] = [];         // List of hotels loaded from API
-  searchCity: string = '';       // City search input
+  hotels: Hotel[] = [];
+  searchCity: string = '';
   errorMessage: string = '';
   isLoading: boolean = false;
 
   constructor(
     private hotelService: HotelService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    // Load all hotels when the page opens
     this.loadHotels();
   }
 
@@ -35,14 +33,13 @@ export class HotelsComponent implements OnInit {
         this.hotels = data;
         this.isLoading = false;
       },
-      error: (err) => {
-        this.errorMessage = 'Failed to load hotels. Please try again.';
+      error: () => {
+        this.errorMessage = 'Failed to load hotels.';
         this.isLoading = false;
       }
     });
   }
 
-  // Search hotels by the entered city
   searchHotels(): void {
     if (!this.searchCity.trim()) {
       this.loadHotels();
@@ -52,20 +49,19 @@ export class HotelsComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.hotelService.searchHotelsByCity(this.searchCity).subscribe({
+    this.hotelService.searchHotels(this.searchCity).subscribe({
       next: (data) => {
         this.hotels = data;
         this.isLoading = false;
       },
-      error: (err) => {
-        this.errorMessage = 'Search failed. Please try again.';
+      error: () => {
+        this.errorMessage = 'Search failed.';
         this.isLoading = false;
       }
     });
   }
 
-  // Navigate to the rooms page for the selected hotel
-  viewRooms(hotelId: number): void {
-    this.router.navigate(['/rooms', hotelId]);
+  viewRooms(id: number): void {
+    this.router.navigate(['/rooms', id]);
   }
 }
