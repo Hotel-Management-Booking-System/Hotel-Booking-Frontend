@@ -52,7 +52,7 @@ export class BookingsComponent implements OnInit {
   }
 
   loadRoom(): void {
-    this.roomService.getRoomById(this.hotelId, this.bookingData.roomId).subscribe({
+    this.roomService.getRoomById(this.bookingData.roomId).subscribe({
       next: (data) => {
         this.room = data;
       },

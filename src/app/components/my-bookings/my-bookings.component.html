@@ -14,37 +14,41 @@
     <a routerLink="/hotels" class="btn btn-primary">Browse Hotels</a>
   </div>
 
-  <!-- Bookings table -->
-  <div class="table-container" *ngIf="!isLoading && bookings.length > 0">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Hotel</th>
-          <th>Room</th>
-          <th>Check-In</th>
-          <th>Check-Out</th>
-          <th>Total</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let booking of bookings; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ booking.hotelName || 'N/A' }}</td>
-          <td>{{ booking.roomNumber || booking.roomId }}</td>
-          <td>{{ booking.checkInDate | date:'mediumDate' }}</td>
-          <td>{{ booking.checkOutDate | date:'mediumDate' }}</td>
-          <td>${{ booking.totalAmount | number:'1.2-2' }}</td>
-          <td>
-            <span class="status-badge" [ngClass]="'status-' + booking.status.toLowerCase()">
-              {{ booking.status }}
-            </span>
-          </td>
-          <td>—</td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Bookings list -->
+  <div class="bookings-grid" *ngIf="!isLoading && bookings.length > 0">
+    <div class="booking-card card shadow-hover" *ngFor="let booking of bookings; let i = index">
+      <div class="booking-card-header">
+        <div class="hotel-info">
+          <span class="hotel-icon">🏨</span>
+          <h3>{{ booking.hotelName || 'Premium Hotel' }}</h3>
+        </div>
+        <span class="status-badge" [ngClass]="'status-' + (booking.status.toLowerCase() || 'pending')">
+          {{ booking.status }}
+        </span>
+      </div>
+
+      <div class="booking-card-content">
+        <div class="booking-item">
+          <span class="label">Room</span>
+          <span class="value">{{ booking.roomNumber || (booking.roomId ? 'Room #' + booking.roomId : 'Premium Suite') }}</span>
+        </div>
+        <div class="booking-item">
+          <span class="label">Dates</span>
+          <span class="value">{{ booking.checkInDate | date:'mediumDate' }} - {{ booking.checkOutDate | date:'mediumDate' }}</span>
+        </div>
+        <div class="booking-item">
+          <span class="label">Total Amount</span>
+          <span class="value amount">{{ booking.totalAmount > 0 ? (booking.totalAmount | currency) : 'TBD' }}</span>
+        </div>
+      </div>
+
+      <div class="booking-card-footer">
+        <span class="booking-date">Booked on: {{ (booking.createdAt | date:'shortDate') || 'Recently' }}</span>
+        <div class="booking-actions">
+          <button class="btn btn-outline btn-sm" *ngIf="booking.status === 'Pending'" (click)="onCancelBooking(booking.id)">Cancel</button>
+          <button class="btn btn-primary btn-sm">View Details</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

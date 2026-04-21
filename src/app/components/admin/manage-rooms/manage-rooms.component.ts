@@ -116,7 +116,7 @@ export class ManageRoomsComponent implements OnInit {
     }
 
     if (this.isEditing) {
-      this.roomService.updateRoom(this.roomForm.hotelId, this.editingRoomId, this.roomForm).subscribe({
+      this.roomService.updateRoom(this.editingRoomId, this.roomForm).subscribe({
         next: () => {
           this.successMessage = 'Room updated successfully.';
           this.showForm = false;
@@ -127,7 +127,7 @@ export class ManageRoomsComponent implements OnInit {
         }
       });
     } else {
-      this.roomService.createRoom(this.roomForm.hotelId, this.roomForm).subscribe({
+      this.roomService.createRoom(this.roomForm).subscribe({
         next: () => {
           this.successMessage = 'Room created successfully.';
           this.showForm = false;
@@ -140,12 +140,12 @@ export class ManageRoomsComponent implements OnInit {
     }
   }
 
-  deleteRoom(hotelId: number, roomId: number): void {
-    if (!confirm('Delete this room?')) return;
+  deleteRoom(roomId: number): void {
+    if (!confirm('Are you sure you want to delete this room?')) return;
 
-    this.roomService.deleteRoom(hotelId, roomId).subscribe({
+    this.roomService.deleteRoom(roomId).subscribe({
       next: () => {
-        this.successMessage = 'Room deleted.';
+        this.successMessage = 'Room deleted successfully.';
         this.rooms = this.rooms.filter(r => r.id !== roomId);
       },
       error: () => {
