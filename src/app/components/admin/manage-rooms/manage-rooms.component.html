@@ -17,7 +17,7 @@
 
       <div class="form-group">
         <label>Hotel</label>
-        <select name="hotelId" [(ngModel)]="roomForm.hotelId" required>
+        <select name="hotelId" [(ngModel)]="roomForm.hotelId" required [disabled]="isEditing">
           <option value="0" disabled>-- Select Hotel --</option>
           <option *ngFor="let hotel of hotels" [value]="hotel.id">{{ hotel.name }}</option>
         </select>
@@ -55,7 +55,12 @@
 
       <div class="form-group">
         <label>Description</label>
-        <textarea name="description" [(ngModel)]="roomForm.description" rows="3" placeholder="Room details..."></textarea>
+        <textarea name="description" [(ngModel)]="roomForm.description" rows="2" placeholder="Room details..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Features (comma-separated)</label>
+        <input type="text" name="features" [(ngModel)]="roomForm.features" placeholder="WiFi, AC, TV, Mini-bar" />
       </div>
 
       <div class="form-group">
@@ -71,7 +76,7 @@
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">{{ isEditing ? 'Update Room' : 'Create Room' }}</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!roomFormRef.form.valid">{{ isEditing ? 'Update Room' : 'Create Room' }}</button>
         <button type="button" class="btn btn-outline" (click)="cancelForm()">Cancel</button>
       </div>
     </form>
@@ -106,7 +111,7 @@
           </td>
           <td class="action-buttons">
             <button class="btn btn-sm btn-outline" (click)="openEditForm(room)">✏️ Edit</button>
-            <button class="btn btn-sm btn-danger" (click)="deleteRoom(room.id)">🗑️ Delete</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteRoom(room.hotelId, room.id)">🗑️ Delete</button>
           </td>
         </tr>
       </tbody>

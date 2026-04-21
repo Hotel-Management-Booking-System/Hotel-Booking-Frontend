@@ -33,8 +33,8 @@ export class HotelsComponent implements OnInit {
         this.hotels = data;
         this.isLoading = false;
       },
-      error: () => {
-        this.errorMessage = 'Failed to load hotels.';
+      error: (err) => {
+        this.errorMessage = 'Failed to load hotels. Please try again.';
         this.isLoading = false;
       }
     });
@@ -49,13 +49,13 @@ export class HotelsComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.hotelService.searchHotels(this.searchCity).subscribe({
+    this.hotelService.searchHotelsByCity(this.searchCity).subscribe({
       next: (data) => {
         this.hotels = data;
         this.isLoading = false;
       },
-      error: () => {
-        this.errorMessage = 'Search failed.';
+      error: (err) => {
+        this.errorMessage = 'Search failed. Please try again.';
         this.isLoading = false;
       }
     });
