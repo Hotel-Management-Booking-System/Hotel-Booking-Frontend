@@ -10,18 +10,18 @@ import { LoginRequest, RegisterRequest, AuthResponse } from '../models/user.mode
 })
 export class AuthService {
 
-  private apiUrl = environment.apiUrl;
+  private apiUrl = environment.apiUrl + "/auth";
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Send login credentials to the backend
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials);
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials);
   }
 
   // Send registration data to the backend
   register(data: RegisterRequest): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/auth/register`, data);
+    return this.http.post<any>(`${this.apiUrl}/register`, data);
   }
 
   // Save auth data to localStorage after successful login
@@ -30,18 +30,12 @@ export class AuthService {
     localStorage.setItem('role', response.role);
     localStorage.setItem('email', response.email);
     localStorage.setItem('userId', response.userId.toString());
-    localStorage.setItem('firstName', response.firstName);
-    localStorage.setItem('lastName', response.lastName);
+    localStorage.setItem('fullName', response.fullName);
   }
 
   // Remove all auth data from localStorage (logout)
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('email');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('firstName');
-    localStorage.removeItem('lastName');
+    localStorage.clear();
   }
 
   // Check if the user is currently logged in
@@ -55,8 +49,8 @@ export class AuthService {
   }
 
   // Get the current user's first name
-  getFirstName(): string {
-    return localStorage.getItem('firstName') || '';
+  getFullName(): string {
+    return localStorage.getItem('fullName') || '';
   }
 
   // Check if the current user is an admin
