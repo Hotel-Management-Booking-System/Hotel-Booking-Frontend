@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BookingService } from '../../services/booking.service';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Booking } from '../../models/booking.model';
 
 // My Bookings component - shows the current user's booking history.
@@ -30,8 +31,30 @@ export class MyBookingsComponent implements OnInit {
         this.bookings = data;
         this.isLoading = false;
       },
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 404) {
+          this.bookings = [];
+        } else {
+          this.errorMessage = 'Failed to load your bookings. Please try again later.';
+        }
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onCancelBooking(bookingId: number): void {
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+    this.isLoading = true;
+    // Note: This assumes updateBookingStatus can be used by users or a specific cancel endpoint exists.
+    // For now, using updateBookingStatus with 'Cancelled' status.
+    this.bookingService.updateBookingStatus({ bookingId, status: 'Cancelled' }).subscribe({
+      next: () => {
+        this.successMessage = 'Booking cancelled successfully.';
+        this.loadMyBookings();
+      },
       error: () => {
-        this.errorMessage = 'Failed to load your bookings.';
+        this.errorMessage = 'Failed to cancel the booking. Please try again.';
         this.isLoading = false;
       }
     });
