@@ -13,8 +13,7 @@ export class RegisterComponent {
 
   // The register form data bound via ngModel
   registerData: RegisterRequest = {
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
     phone: '',
     password: ''
@@ -30,7 +29,7 @@ export class RegisterComponent {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   // Called when user submits the registration form
   onRegister(): void {

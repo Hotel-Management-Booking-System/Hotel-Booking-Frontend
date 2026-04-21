@@ -17,8 +17,7 @@ export interface LoginRequest {
 
 // Used for registration request
 export interface RegisterRequest {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   phone: string;
   password: string;
@@ -30,6 +29,5 @@ export interface AuthResponse {
   role: string;
   email: string;
   userId: number;
-  firstName: string;
-  lastName: string;
+  fullName: string;
 }
