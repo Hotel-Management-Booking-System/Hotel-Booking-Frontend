@@ -34,7 +34,7 @@
 
     <!-- Show when logged in -->
     <ng-container *ngIf="authService.isLoggedIn()">
-      <span class="user-greeting">👋 {{ authService.getFirstName() }}</span>
+      <span class="user-greeting">👋 {{ authService.getFullName() }}</span>
       <button class="btn btn-outline" (click)="logout()">Logout</button>
     </ng-container>
   </div>
