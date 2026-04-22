@@ -13,6 +13,7 @@ import { ManageHotelsComponent }   from './components/admin/manage-hotels/manage
 import { ManageRoomsComponent }    from './components/admin/manage-rooms/manage-rooms.component';
 import { ManageBookingsComponent } from './components/admin/manage-bookings/manage-bookings.component';
 import { PromotionsComponent }     from './components/admin/promotions/promotions.component';
+import { ManageAmenitiesComponent } from './components/admin/manage-amenities/manage-amenities.component';
 
 // Import guards
 import { AuthGuard } from './guards/auth.guard';
@@ -66,6 +67,12 @@ const routes: Routes = [
   {
     path: 'admin/promotions',
     component: PromotionsComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: '1' }
+  },
+  {
+    path: 'admin/manage-amenities',
+    component: ManageAmenitiesComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { role: '1' }
   },

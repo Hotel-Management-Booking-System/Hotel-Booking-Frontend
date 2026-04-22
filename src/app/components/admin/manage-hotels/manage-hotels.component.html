@@ -58,8 +58,23 @@
       </div>
 
       <div class="form-group">
-        <label>Amenities (comma-separated)</label>
-        <input type="text" name="amenities" [(ngModel)]="hotelForm.amenities" placeholder="WiFi, Pool, Parking" />
+        <label>Amenities</label>
+        <div class="custom-select-container">
+          <div class="custom-select-button" (click)="toggleDropdown()">
+            <span class="selected-text">{{ getSelectedAmenitiesText() }}</span>
+            <span class="dropdown-icon" [class.open]="isDropdownOpen">▼</span>
+          </div>
+          
+          <div class="custom-select-dropdown-overlay" *ngIf="isDropdownOpen" (click)="isDropdownOpen = false"></div>
+          
+          <div class="custom-select-dropdown" *ngIf="isDropdownOpen">
+            <div class="dropdown-item" *ngFor="let a of availableAmenities" (click)="toggleAmenity(a.id, $event)">
+              <input type="checkbox" [checked]="hotelForm.amenityIds.includes(a.id)" (change)="toggleAmenity(a.id, $event)" (click)="$event.stopPropagation()">
+              <label>{{ a.name }}</label>
+            </div>
+          </div>
+        </div>
+        <small style="display: block; margin-top: 5px; color: #aaa;">Click to select multiple amenities</small>
       </div>
 
       <div class="form-group">

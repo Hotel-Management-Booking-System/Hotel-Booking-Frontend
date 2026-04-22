@@ -322,6 +322,17 @@ select option {
   margin-top: 0.5rem;
 }
 
+/* Invisible bridge to prevent hover loss when moving mouse to menu */
+.dropdown-menu::before {
+  content: "";
+  position: absolute;
+  top: -0.5rem;
+  left: 0;
+  right: 0;
+  height: 0.5rem;
+  background: transparent;
+}
+
 .dropdown:hover .dropdown-menu {
   display: block;
 }

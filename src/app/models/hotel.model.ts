@@ -26,6 +26,6 @@ export interface CreateHotel {
   starRating: number;
   phoneNumber: string;
   email: string;
-  amenities: string; // Backend expects string
+  amenityIds: number[]; // Changed to array of numbers
   imageUrl: string;
 }
