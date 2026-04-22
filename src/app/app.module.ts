@@ -23,6 +23,7 @@ import { PromotionsComponent }     from './components/admin/promotions/promotion
 
 // Interceptor
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { ManageAmenitiesComponent } from './components/admin/manage-amenities/manage-amenities.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     ManageHotelsComponent,
     ManageRoomsComponent,
     ManageBookingsComponent,
-    PromotionsComponent
+    PromotionsComponent,
+    ManageAmenitiesComponent
   ],
   imports: [
     BrowserModule,

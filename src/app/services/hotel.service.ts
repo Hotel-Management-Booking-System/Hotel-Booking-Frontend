@@ -105,4 +105,11 @@ export class HotelService {
       headers: this.getHeaders()
     });
   }
+
+  // 🛠 ADMIN: Get All Amenities
+  getAllAmenities(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/amenity`, {
+      headers: this.getHeaders()
+    });
+  }
 }

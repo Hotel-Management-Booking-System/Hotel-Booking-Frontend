@@ -26,7 +26,7 @@ export class BookingService {
       hotelName: b.hotelName || b.HotelName || b.hotel?.name || b.Hotel?.Name,
       checkInDate: b.checkInDate || b.CheckInDate,
       checkOutDate: b.checkOutDate || b.CheckOutDate,
-      totalAmount: b.totalAmount || b.TotalAmount || b.price || 0,
+      totalAmount: Number(b.totalAmount ?? b.TotalAmount ?? b.price ?? b.Price ?? b.totalPrice ?? b.TotalPrice ?? 0),
       status: b.status || b.Status || 'Pending',
       specialRequests: b.specialRequests || b.SpecialRequests,
       createdAt: b.createdAt || b.CreatedAt

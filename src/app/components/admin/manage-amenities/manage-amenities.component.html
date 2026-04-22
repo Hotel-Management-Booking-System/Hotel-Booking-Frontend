@@ -1,0 +1,32 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Manage Amenities</h1>
+    <p>Add and view amenities for hotels</p>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  
+  <div class="form-panel card" style="max-width: 500px; margin-bottom: 2rem;">
+    <h3>Add New Amenity</h3>
+    <div style="display: flex; gap: 10px;">
+      <input type="text" [(ngModel)]="newAmenityName" placeholder="E.g., Swimming Pool, Free WiFi" style="flex: 1;" (keyup.enter)="addAmenity()" />
+      <button class="btn btn-primary" (click)="addAmenity()" [disabled]="isLoading">Add Amenity</button>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Loading...</div>
+
+  <div class="card" *ngIf="!isLoading && amenities.length > 0">
+    <h3>Available Amenities</h3>
+    <ul style="list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; padding: 0;">
+      <li *ngFor="let a of amenities" class="badge badge-success" style="font-size: 0.9rem; padding: 8px 15px;">
+        {{ a.name }}
+      </li>
+    </ul>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && amenities.length === 0 && !errorMessage">
+    <p>No amenities found. Add some above!</p>
+  </div>
+</div>

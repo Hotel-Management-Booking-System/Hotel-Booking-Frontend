@@ -17,9 +17,9 @@
 
       <div class="form-group">
         <label>Hotel</label>
-        <select name="hotelId" [(ngModel)]="roomForm.hotelId" required [disabled]="isEditing">
-          <option value="0" disabled>-- Select Hotel --</option>
-          <option *ngFor="let hotel of hotels" [value]="hotel.id">{{ hotel.name }}</option>
+        <select name="hotelId" [(ngModel)]="roomForm.hotelId" required>
+          <option [ngValue]="0" disabled>-- Select Hotel --</option>
+          <option *ngFor="let hotel of hotels" [ngValue]="hotel.id">{{ hotel.name }}</option>
         </select>
       </div>
 

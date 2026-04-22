@@ -30,8 +30,8 @@ export class RoomService {
       hotelName: r.hotelName || '',
       roomNumber: r.roomNumber || '',
       roomType: r.roomType,
-      pricePerNight: r.price || r.pricePerNight,
-      maxOccupancy: r.capacity || r.maxOccupancy,
+      pricePerNight: Number(r.price ?? r.Price ?? r.pricePerNight ?? r.PricePerNight ?? 0),
+      maxOccupancy: Number(r.capacity ?? r.Capacity ?? r.maxOccupancy ?? r.MaxOccupancy ?? 1),
       description: r.description || '',
       features: r.features || '',
       imageUrl: r.imageUrl || '',
@@ -64,14 +64,24 @@ export class RoomService {
 
   // ✅ Create room
   createRoom(room: CreateRoom): Observable<Room> {
-    return this.http.post<Room>(this.roomsUrl, room, {
+    const payload = {
+      ...room,
+      price: room.pricePerNight,
+      capacity: room.maxOccupancy
+    };
+    return this.http.post<Room>(this.roomsUrl, payload, {
       headers: this.getHeaders()
     });
   }
 
   // ✅ Update room
   updateRoom(roomId: number, room: CreateRoom): Observable<Room> {
-    return this.http.put<Room>(`${this.roomsUrl}/${roomId}`, room, {
+    const payload = {
+      ...room,
+      price: room.pricePerNight,
+      capacity: room.maxOccupancy
+    };
+    return this.http.put<Room>(`${this.roomsUrl}/${roomId}`, payload, {
       headers: this.getHeaders()
     });
   }
@@ -79,7 +89,8 @@ export class RoomService {
   // ✅ Delete room
   deleteRoom(roomId: number): Observable<any> {
     return this.http.delete(`${this.roomsUrl}/${roomId}`, {
-      headers: this.getHeaders()
+      headers: this.getHeaders(),
+      responseType: 'text'
     });
   }
 }

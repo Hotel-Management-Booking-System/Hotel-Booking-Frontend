@@ -11,14 +11,17 @@ import { Hotel, CreateHotel } from '../../../models/hotel.model';
 export class ManageHotelsComponent implements OnInit {
 
   hotels: Hotel[] = [];
+  availableAmenities: any[] = [];
   errorMessage: string = '';
   successMessage: string = '';
   isLoading: boolean = false;
+  newAmenityName: string = '';
 
   // Controls whether the create/edit form is shown
   showForm: boolean = false;
   isEditing: boolean = false;
   editingHotelId: number = 0;
+  isDropdownOpen: boolean = false;
 
   // The form model for creating/editing a hotel
   hotelForm: CreateHotel = this.getEmptyForm();
@@ -27,6 +30,18 @@ export class ManageHotelsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadHotels();
+    this.loadAmenities();
+  }
+
+  loadAmenities(): void {
+    this.hotelService.getAllAmenities().subscribe({
+      next: (data) => {
+        this.availableAmenities = data;
+      },
+      error: () => {
+        console.error('Failed to load amenities');
+      }
+    });
   }
 
   // Return a blank hotel form object
@@ -40,7 +55,7 @@ export class ManageHotelsComponent implements OnInit {
       starRating: 3,
       phoneNumber: '',
       email: '',
-      amenities: '',
+      amenityIds: [],
       imageUrl: ''
     };
   }
@@ -66,12 +81,17 @@ export class ManageHotelsComponent implements OnInit {
     this.hotelForm = this.getEmptyForm();
     this.isEditing = false;
     this.showForm = true;
+    this.isDropdownOpen = false;
     this.errorMessage = '';
     this.successMessage = '';
   }
 
   // Open the form pre-filled for editing
   openEditForm(hotel: Hotel): void {
+    const selectedIds = this.availableAmenities
+      .filter(a => hotel.amenities.includes(a.name))
+      .map(a => a.id);
+
     this.hotelForm = {
       name: hotel.name,
       description: hotel.description,
@@ -81,18 +101,48 @@ export class ManageHotelsComponent implements OnInit {
       starRating: hotel.starRating,
       phoneNumber: hotel.phoneNumber,
       email: hotel.email,
-      amenities: hotel.amenities.join(', '),
+      amenityIds: selectedIds,
       imageUrl: hotel.imageUrl
     };
     this.editingHotelId = hotel.id;
     this.isEditing = true;
     this.showForm = true;
+    this.isDropdownOpen = false;
     this.errorMessage = '';
     this.successMessage = '';
   }
 
   cancelForm(): void {
     this.showForm = false;
+    this.isDropdownOpen = false;
+  }
+
+  toggleDropdown(): void {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  toggleAmenity(amenityId: number, event: Event): void {
+    event.stopPropagation();
+    const index = this.hotelForm.amenityIds.indexOf(amenityId);
+    if (index > -1) {
+      this.hotelForm.amenityIds.splice(index, 1);
+    } else {
+      this.hotelForm.amenityIds.push(amenityId);
+    }
+  }
+
+  getSelectedAmenitiesText(): string {
+    if (!this.hotelForm.amenityIds || this.hotelForm.amenityIds.length === 0) {
+      return 'Select Amenities...';
+    }
+    const selectedNames = this.availableAmenities
+      .filter(a => this.hotelForm.amenityIds.includes(a.id))
+      .map(a => a.name);
+    
+    if (selectedNames.length > 3) {
+      return `${selectedNames.length} amenities selected`;
+    }
+    return selectedNames.join(', ');
   }
 
   // Save - either create or update based on isEditing flag
@@ -135,6 +185,20 @@ export class ManageHotelsComponent implements OnInit {
       },
       error: () => {
         this.errorMessage = 'Failed to delete hotel.';
+      }
+    });
+  }
+
+  addAmenity(): void {
+    if (!this.newAmenityName.trim()) return;
+    this.hotelService.addAmenity(this.newAmenityName).subscribe({
+      next: () => {
+        this.newAmenityName = '';
+        this.loadAmenities();
+        this.successMessage = 'Amenity added successfully.';
+      },
+      error: () => {
+        this.errorMessage = 'Failed to add amenity.';
       }
     });
   }
