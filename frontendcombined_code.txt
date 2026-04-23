@@ -1,0 +1,3077 @@
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\dist\hotel-booking-frontend\index.html =====
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StayEase - Hotel Booking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="StayEase - Find and book the best hotels at the best prices. Secure, fast, and easy hotel reservations online.">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="stylesheet" href="styles.css"></head>
+<body>
+  <app-root></app-root>
+<script src="runtime.js" type="module"></script><script src="polyfills.js" type="module"></script><script src="vendor.js" type="module"></script><script src="main.js" type="module"></script></body>
+</html>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\admin\manage-amenities\manage-amenities.component.html =====
+
+<div class="page-container">
+  <div class="page-header">
+    <h1>Manage Amenities</h1>
+    <p>Add and view amenities for hotels</p>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  
+  <div class="form-panel card" style="max-width: 500px; margin-bottom: 2rem;">
+    <h3>Add New Amenity</h3>
+    <div style="display: flex; gap: 10px;">
+      <input type="text" [(ngModel)]="newAmenityName" placeholder="E.g., Swimming Pool, Free WiFi" style="flex: 1;" (keyup.enter)="addAmenity()" />
+      <button class="btn btn-primary" (click)="addAmenity()" [disabled]="isLoading">Add Amenity</button>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Loading...</div>
+
+  <div class="card" *ngIf="!isLoading && amenities.length > 0">
+    <h3>Available Amenities</h3>
+    <ul style="list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; padding: 0;">
+      <li *ngFor="let a of amenities" class="badge badge-success" style="font-size: 0.9rem; padding: 8px 15px;">
+        {{ a.name }}
+      </li>
+    </ul>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && amenities.length === 0 && !errorMessage">
+    <p>No amenities found. Add some above!</p>
+  </div>
+</div>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\admin\manage-amenities\manage-amenities.component.ts =====
+
+import { Component, OnInit } from '@angular/core';
+import { HotelService } from '../../../services/hotel.service';
+
+@Component({
+  selector: 'app-manage-amenities',
+  templateUrl: './manage-amenities.component.html',
+  styleUrls: ['./manage-amenities.component.css']
+})
+export class ManageAmenitiesComponent implements OnInit {
+  amenities: any[] = [];
+  newAmenityName: string = '';
+  errorMessage: string = '';
+  successMessage: string = '';
+  isLoading: boolean = false;
+
+  constructor(private hotelService: HotelService) {}
+
+  ngOnInit(): void {
+    this.loadAmenities();
+  }
+
+  loadAmenities(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    this.hotelService.getAllAmenities().subscribe({
+      next: (data) => {
+        this.amenities = data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load amenities.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  addAmenity(): void {
+    if (!this.newAmenityName.trim()) {
+      this.errorMessage = 'Amenity name cannot be empty.';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.hotelService.addAmenity(this.newAmenityName.trim()).subscribe({
+      next: () => {
+        this.successMessage = `Amenity "${this.newAmenityName}" added successfully.`;
+        this.newAmenityName = '';
+        this.loadAmenities();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to add amenity.';
+        this.isLoading = false;
+      }
+    });
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\admin\manage-bookings\manage-bookings.component.html =====
+
+<div class="page-container">
+  <div class="page-header">
+    <h1>Manage Bookings</h1>
+    <p>View all reservations and update their status</p>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading bookings...</div>
+
+  <div class="empty-state" *ngIf="!isLoading && bookings.length === 0 && !errorMessage">
+    <p>No bookings found in the system.</p>
+  </div>
+
+  <!-- Bookings Table -->
+  <div class="table-container" *ngIf="!isLoading && bookings.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Guest</th>
+          <th>Hotel</th>
+          <th>Room</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let booking of bookings; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ booking.userName || 'User #' + booking.userId }}</td>
+          <td>{{ booking.hotelName || 'N/A' }}</td>
+          <td>{{ booking.roomNumber || booking.roomId }}</td>
+          <td>{{ booking.checkInDate | date:'mediumDate' }}</td>
+          <td>{{ booking.checkOutDate | date:'mediumDate' }}</td>
+          <td>${{ booking.totalAmount | number:'1.2-2' }}</td>
+          <td>
+            <!-- Status dropdown for quick update -->
+            <select
+              class="status-select"
+              [ngModel]="booking.status"
+              (change)="updateStatus(booking.id, $any($event.target).value)"
+              [ngClass]="'status-' + booking.status.toLowerCase()"
+            >
+              <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+            </select>
+          </td>
+          <td>
+            —
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\admin\manage-bookings\manage-bookings.component.ts =====
+
+import { Component, OnInit } from '@angular/core';
+import { BookingService } from '../../../services/booking.service';
+import { Booking, UpdateBookingStatus } from '../../../models/booking.model';
+
+// Admin: Manage Bookings - view all bookings and update their status.
+@Component({
+  selector: 'app-manage-bookings',
+  templateUrl: './manage-bookings.component.html',
+  styleUrls: ['./manage-bookings.component.css']
+})
+export class ManageBookingsComponent implements OnInit {
+
+  bookings: Booking[] = [];
+  errorMessage: string = '';
+  successMessage: string = '';
+  isLoading: boolean = false;
+
+  // Available status options for the dropdown
+  statusOptions: string[] = ['Pending', 'Confirmed', 'Cancelled', 'Completed'];
+
+  constructor(private bookingService: BookingService) {}
+
+  ngOnInit(): void {
+    this.loadAllBookings();
+  }
+
+  loadAllBookings(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.bookingService.getAllBookings().subscribe({
+      next: (data) => {
+        this.bookings = data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load bookings.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Change the status of a booking
+  updateStatus(bookingId: number, newStatus: string): void {
+    const payload: UpdateBookingStatus = { bookingId, status: newStatus };
+
+    this.bookingService.updateBookingStatus(payload).subscribe({
+      next: () => {
+        this.successMessage = 'Booking status updated.';
+        // Update in the list
+        const booking = this.bookings.find(b => b.id === bookingId);
+        if (booking) {
+          booking.status = newStatus as any;
+        }
+      },
+      error: () => {
+        this.errorMessage = 'Failed to update booking status.';
+      }
+    });
+  }
+
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\admin\manage-hotels\manage-hotels.component.html =====
+
+<div class="page-container">
+  <div class="page-header">
+    <h1>Manage Hotels</h1>
+    <p>Create, edit and delete hotels</p>
+    <button class="btn btn-primary" (click)="openCreateForm()">+ Add Hotel</button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading...</div>
+
+  <!-- Create / Edit Form (shown inline) -->
+  <div class="form-panel card" *ngIf="showForm">
+    <h3>{{ isEditing ? 'Edit Hotel' : 'Add New Hotel' }}</h3>
+
+    <form #hotelFormRef="ngForm" (ngSubmit)="saveHotel()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hotel Name</label>
+          <input type="text" name="name" [(ngModel)]="hotelForm.name" placeholder="Grand Palace Hotel" required />
+        </div>
+        <div class="form-group">
+          <label>Star Rating (1-5)</label>
+          <input type="number" name="starRating" [(ngModel)]="hotelForm.starRating" min="1" max="5" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" [(ngModel)]="hotelForm.description" rows="3" placeholder="Describe the hotel..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Location/Address</label>
+        <input type="text" name="location" [(ngModel)]="hotelForm.location" placeholder="123 Main Street" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" name="city" [(ngModel)]="hotelForm.city" placeholder="Paris" required />
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <input type="text" name="country" [(ngModel)]="hotelForm.country" placeholder="France" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" [(ngModel)]="hotelForm.email" placeholder="info@hotel.com" required />
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" name="phoneNumber" [(ngModel)]="hotelForm.phoneNumber" placeholder="+1 234 567 8900" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Amenities</label>
+        <div class="custom-select-container">
+          <div class="custom-select-button" (click)="toggleDropdown()">
+            <span class="selected-text">{{ getSelectedAmenitiesText() }}</span>
+            <span class="dropdown-icon" [class.open]="isDropdownOpen">▼</span>
+          </div>
+          
+          <div class="custom-select-dropdown-overlay" *ngIf="isDropdownOpen" (click)="isDropdownOpen = false"></div>
+          
+          <div class="custom-select-dropdown" *ngIf="isDropdownOpen">
+            <div class="dropdown-item" *ngFor="let a of availableAmenities" (click)="toggleAmenity(a.id, $event)">
+              <input type="checkbox" [checked]="hotelForm.amenityIds.includes(a.id)" (change)="toggleAmenity(a.id, $event)" (click)="$event.stopPropagation()">
+              <label>{{ a.name }}</label>
+            </div>
+          </div>
+        </div>
+        <small style="display: block; margin-top: 5px; color: #aaa;">Click to select multiple amenities</small>
+      </div>
+
+      <div class="form-group">
+        <label>Image URL</label>
+        <input type="text" name="imageUrl" [(ngModel)]="hotelForm.imageUrl" placeholder="https://..." />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="!hotelFormRef.form.valid">{{ isEditing ? 'Update Hotel' : 'Create Hotel' }}</button>
+        <button type="button" class="btn btn-outline" (click)="cancelForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Hotels Table -->
+  <div class="table-container" *ngIf="!isLoading && hotels.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>City</th>
+          <th>Stars</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let hotel of hotels; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ hotel.name }}</td>
+          <td>{{ hotel.city }}, {{ hotel.country }}</td>
+          <td>{{ '⭐'.repeat(hotel.starRating) }}</td>
+          <td class="action-buttons">
+            <button class="btn btn-sm btn-outline" (click)="openEditForm(hotel)">✏️ Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteHotel(hotel.id)">🗑️ Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && hotels.length === 0 && !errorMessage">
+    <p>No hotels yet. Click "Add Hotel" to create one.</p>
+  </div>
+</div>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\admin\manage-hotels\manage-hotels.component.ts =====
+
+import { Component, OnInit } from '@angular/core';
+import { HotelService } from '../../../services/hotel.service';
+import { Hotel, CreateHotel } from '../../../models/hotel.model';
+
+// Admin: Manage Hotels - full CRUD for hotels.
+@Component({
+  selector: 'app-manage-hotels',
+  templateUrl: './manage-hotels.component.html',
+  styleUrls: ['./manage-hotels.component.css']
+})
+export class ManageHotelsComponent implements OnInit {
+
+  hotels: Hotel[] = [];
+  availableAmenities: any[] = [];
+  errorMessage: string = '';
+  successMessage: string = '';
+  isLoading: boolean = false;
+  newAmenityName: string = '';
+
+  // Controls whether the create/edit form is shown
+  showForm: boolean = false;
+  isEditing: boolean = false;
+  editingHotelId: number = 0;
+  isDropdownOpen: boolean = false;
+
+  // The form model for creating/editing a hotel
+  hotelForm: CreateHotel = this.getEmptyForm();
+
+  constructor(private hotelService: HotelService) {}
+
+  ngOnInit(): void {
+    this.loadHotels();
+    this.loadAmenities();
+  }
+
+  loadAmenities(): void {
+    this.hotelService.getAllAmenities().subscribe({
+      next: (data) => {
+        this.availableAmenities = data;
+      },
+      error: () => {
+        console.error('Failed to load amenities');
+      }
+    });
+  }
+
+  // Return a blank hotel form object
+  getEmptyForm(): CreateHotel {
+    return {
+      name: '',
+      description: '',
+      location: '',
+      city: '',
+      country: '',
+      starRating: 3,
+      phoneNumber: '',
+      email: '',
+      amenityIds: [],
+      imageUrl: ''
+    };
+  }
+
+  loadHotels(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.hotelService.getAllHotels().subscribe({
+      next: (data) => {
+        this.hotels = data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load hotels.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Open the form for creating a new hotel
+  openCreateForm(): void {
+    this.hotelForm = this.getEmptyForm();
+    this.isEditing = false;
+    this.showForm = true;
+    this.isDropdownOpen = false;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  // Open the form pre-filled for editing
+  openEditForm(hotel: Hotel): void {
+    const selectedIds = this.availableAmenities
+      .filter(a => hotel.amenities.includes(a.name))
+      .map(a => a.id);
+
+    this.hotelForm = {
+      name: hotel.name,
+      description: hotel.description,
+      location: hotel.location,
+      city: hotel.city,
+      country: hotel.country,
+      starRating: hotel.starRating,
+      phoneNumber: hotel.phoneNumber,
+      email: hotel.email,
+      amenityIds: selectedIds,
+      imageUrl: hotel.imageUrl
+    };
+    this.editingHotelId = hotel.id;
+    this.isEditing = true;
+    this.showForm = true;
+    this.isDropdownOpen = false;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  cancelForm(): void {
+    this.showForm = false;
+    this.isDropdownOpen = false;
+  }
+
+  toggleDropdown(): void {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  toggleAmenity(amenityId: number, event: Event): void {
+    event.stopPropagation();
+    const index = this.hotelForm.amenityIds.indexOf(amenityId);
+    if (index > -1) {
+      this.hotelForm.amenityIds.splice(index, 1);
+    } else {
+      this.hotelForm.amenityIds.push(amenityId);
+    }
+  }
+
+  getSelectedAmenitiesText(): string {
+    if (!this.hotelForm.amenityIds || this.hotelForm.amenityIds.length === 0) {
+      return 'Select Amenities...';
+    }
+    const selectedNames = this.availableAmenities
+      .filter(a => this.hotelForm.amenityIds.includes(a.id))
+      .map(a => a.name);
+    
+    if (selectedNames.length > 3) {
+      return `${selectedNames.length} amenities selected`;
+    }
+    return selectedNames.join(', ');
+  }
+
+  // Save - either create or update based on isEditing flag
+  saveHotel(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (this.isEditing) {
+      this.hotelService.updateHotel(this.editingHotelId, this.hotelForm).subscribe({
+        next: () => {
+          this.successMessage = 'Hotel updated successfully.';
+          this.showForm = false;
+          this.loadHotels();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to update hotel.';
+        }
+      });
+    } else {
+      this.hotelService.createHotel(this.hotelForm).subscribe({
+        next: () => {
+          this.successMessage = 'Hotel created successfully.';
+          this.showForm = false;
+          this.loadHotels();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to create hotel.';
+        }
+      });
+    }
+  }
+
+  deleteHotel(id: number): void {
+    if (!confirm('Are you sure you want to delete this hotel?')) return;
+
+    this.hotelService.deleteHotel(id).subscribe({
+      next: () => {
+        this.successMessage = 'Hotel deleted successfully.';
+        this.hotels = this.hotels.filter(h => h.id !== id);
+      },
+      error: () => {
+        this.errorMessage = 'Failed to delete hotel.';
+      }
+    });
+  }
+
+  addAmenity(): void {
+    if (!this.newAmenityName.trim()) return;
+    this.hotelService.addAmenity(this.newAmenityName).subscribe({
+      next: () => {
+        this.newAmenityName = '';
+        this.loadAmenities();
+        this.successMessage = 'Amenity added successfully.';
+      },
+      error: () => {
+        this.errorMessage = 'Failed to add amenity.';
+      }
+    });
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\admin\manage-rooms\manage-rooms.component.html =====
+
+<div class="page-container">
+  <div class="page-header">
+    <h1>Manage Rooms</h1>
+    <p>Create, edit and delete rooms across all hotels</p>
+    <button class="btn btn-primary" (click)="openCreateForm()">+ Add Room</button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading...</div>
+
+  <!-- Create / Edit Form -->
+  <div class="form-panel card" *ngIf="showForm">
+    <h3>{{ isEditing ? 'Edit Room' : 'Add New Room' }}</h3>
+
+    <form #roomFormRef="ngForm" (ngSubmit)="saveRoom()">
+
+      <div class="form-group">
+        <label>Hotel</label>
+        <select name="hotelId" [(ngModel)]="roomForm.hotelId" required>
+          <option [ngValue]="0" disabled>-- Select Hotel --</option>
+          <option *ngFor="let hotel of hotels" [ngValue]="hotel.id">{{ hotel.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Room Number</label>
+          <input type="text" name="roomNumber" [(ngModel)]="roomForm.roomNumber" placeholder="101" required />
+        </div>
+        <div class="form-group">
+          <label>Room Type</label>
+          <select name="roomType" [(ngModel)]="roomForm.roomType" required>
+            <option value="">-- Select Type --</option>
+            <option value="Single">Single</option>
+            <option value="Double">Double</option>
+            <option value="Twin">Twin</option>
+            <option value="Suite">Suite</option>
+            <option value="Deluxe">Deluxe</option>
+            <option value="Family">Family</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price Per Night ($)</label>
+          <input type="number" name="price" [(ngModel)]="roomForm.price" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Capacity</label>
+          <input type="number" name="capacity" [(ngModel)]="roomForm.capacity" min="1" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" [(ngModel)]="roomForm.description" rows="2" placeholder="Room details..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Image URL</label>
+        <input type="text" name="imageUrl" [(ngModel)]="roomForm.imageUrl" placeholder="https://..." />
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="isAvailable" [(ngModel)]="roomForm.isAvailable" />
+          Available for booking
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="!roomFormRef.form.valid">{{ isEditing ? 'Update Room' : 'Create Room' }}</button>
+        <button type="button" class="btn btn-outline" (click)="cancelForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Rooms Table -->
+  <div class="table-container" *ngIf="!isLoading && rooms.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Hotel</th>
+          <th>Room No.</th>
+          <th>Type</th>
+          <th>Price</th>
+          <th>Capacity</th>
+          <th>Available</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let room of rooms; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ room.hotelName || room.hotelId }}</td>
+          <td>{{ room.roomNumber }}</td>
+          <td><span class="badge">{{ room.roomType }}</span></td>
+          <td>${{ room.price }}</td>
+          <td>{{ room.capacity }}</td>
+          <td>
+            <span class="badge badge-success" *ngIf="room.isAvailable">Yes</span>
+            <span class="badge badge-danger" *ngIf="!room.isAvailable">No</span>
+          </td>
+          <td class="action-buttons">
+            <button class="btn btn-sm btn-outline" (click)="openEditForm(room)">✏️ Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteRoom(room.id)">🗑️ Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && rooms.length === 0 && !errorMessage">
+    <p>No rooms yet. Click "Add Room" to create one.</p>
+  </div>
+</div>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\admin\manage-rooms\manage-rooms.component.ts =====
+
+import { Component, OnInit } from '@angular/core';
+import { RoomService } from '../../../services/room.service';
+import { HotelService } from '../../../services/hotel.service';
+import { Room, CreateRoom } from '../../../models/room.model';
+import { Hotel } from '../../../models/hotel.model';
+
+// Admin: Manage Rooms - full CRUD for rooms across all hotels.
+@Component({
+  selector: 'app-manage-rooms',
+  templateUrl: './manage-rooms.component.html',
+  styleUrls: ['./manage-rooms.component.css']
+})
+export class ManageRoomsComponent implements OnInit {
+
+  rooms: Room[] = [];
+  hotels: Hotel[] = [];    // For the dropdown in the form
+  errorMessage: string = '';
+  successMessage: string = '';
+  isLoading: boolean = false;
+
+  showForm: boolean = false;
+  isEditing: boolean = false;
+  editingRoomId: number = 0;
+
+  roomForm: CreateRoom = this.getEmptyForm();
+
+  constructor(
+    private roomService: RoomService,
+    private hotelService: HotelService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadRooms();
+    this.loadHotels();
+  }
+
+  getEmptyForm(): CreateRoom {
+    return {
+      hotelId: 0,
+      roomNumber: '',
+      roomType: '',
+      price: 0,
+      capacity: 1,
+      description: '',
+      imageUrl: '',
+      isAvailable: true
+    };
+  }
+
+  loadRooms(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.roomService.getAllRooms().subscribe({
+      next: (data) => {
+        this.rooms = data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load rooms.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadHotels(): void {
+    this.hotelService.getAllHotels().subscribe({
+      next: (data) => {
+        this.hotels = data;
+      },
+      error: () => {
+        console.error('Could not load hotels for dropdown');
+      }
+    });
+  }
+
+  openCreateForm(): void {
+    this.roomForm = this.getEmptyForm();
+    this.isEditing = false;
+    this.showForm = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  openEditForm(room: Room): void {
+    this.roomForm = {
+      hotelId: room.hotelId,
+      roomNumber: room.roomNumber,
+      roomType: room.roomType,
+      price: room.price,
+      capacity: room.capacity,
+      description: room.description,
+      imageUrl: room.imageUrl,
+      isAvailable: room.isAvailable
+    };
+    this.editingRoomId = room.id;
+    this.isEditing = true;
+    this.showForm = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  cancelForm(): void {
+    this.showForm = false;
+  }
+
+  saveRoom(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (this.roomForm.hotelId === 0) {
+      this.errorMessage = 'Please select a hotel.';
+      return;
+    }
+
+    if (this.isEditing) {
+      this.roomService.updateRoom(this.editingRoomId, this.roomForm).subscribe({
+        next: () => {
+          this.successMessage = 'Room updated successfully.';
+          this.showForm = false;
+          this.loadRooms();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to update room.';
+        }
+      });
+    } else {
+      this.roomService.createRoom(this.roomForm).subscribe({
+        next: () => {
+          this.successMessage = 'Room created successfully.';
+          this.showForm = false;
+          this.loadRooms();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to create room.';
+        }
+      });
+    }
+  }
+
+  deleteRoom(roomId: number): void {
+    if (!confirm('Are you sure you want to delete this room?')) return;
+
+    this.roomService.deleteRoom(roomId).subscribe({
+      next: () => {
+        this.successMessage = 'Room deleted successfully.';
+        this.rooms = this.rooms.filter(r => r.id !== roomId);
+      },
+      error: () => {
+        this.errorMessage = 'Failed to delete room.';
+      }
+    });
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\admin\promotions\promotions.component.html =====
+
+<div class="page-container">
+  <div class="page-header">
+    <h1>Promotions</h1>
+    <p>Manage discount codes for guests</p>
+    <button class="btn btn-primary" (click)="openCreateForm()">+ Add Promotion</button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading">Loading...</div>
+
+  <!-- Create / Edit Promo Form -->
+  <div class="form-panel card" *ngIf="showForm">
+    <h3>{{ isEditing ? 'Edit Promotion' : 'New Promotion' }}</h3>
+
+    <form #promoFormRef="ngForm" (ngSubmit)="savePromotion()">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Promo Code</label>
+          <input type="text" name="code" [(ngModel)]="promoForm.code" placeholder="SUMMER20" required />
+        </div>
+        <div class="form-group">
+          <label>Discount (%)</label>
+          <input type="number" name="discountPercent" [(ngModel)]="promoForm.discountPercent" min="1" max="100" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" name="description" [(ngModel)]="promoForm.description" placeholder="Summer sale - 20% off" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" name="startDate" [(ngModel)]="promoForm.startDate" required />
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" name="endDate" [(ngModel)]="promoForm.endDate" required />
+        </div>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="isActive" [(ngModel)]="promoForm.isActive" />
+          Active (usable by guests)
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ isEditing ? 'Update' : 'Create' }} Promotion</button>
+        <button type="button" class="btn btn-outline" (click)="cancelForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Promotions Table -->
+  <div class="table-container" *ngIf="!isLoading && promotions.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Code</th>
+          <th>Description</th>
+          <th>Discount</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let promo of promotions; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td><strong class="promo-code">{{ promo.code }}</strong></td>
+          <td>{{ promo.description }}</td>
+          <td>{{ promo.discountPercent }}%</td>
+          <td>{{ promo.startDate | date:'mediumDate' }}</td>
+          <td>{{ promo.endDate | date:'mediumDate' }}</td>
+          <td>
+            <span class="badge badge-success" *ngIf="promo.isActive">Yes</span>
+            <span class="badge badge-danger" *ngIf="!promo.isActive">No</span>
+          </td>
+          <td class="action-buttons">
+            <button class="btn btn-sm btn-outline" (click)="openEditForm(promo)">✏️ Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deletePromotion(promo.id)">🗑️ Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && promotions.length === 0 && !errorMessage">
+    <p>No promotions yet. Click "Add Promotion" to create one.</p>
+  </div>
+</div>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\admin\promotions\promotions.component.ts =====
+
+import { Component, OnInit } from '@angular/core';
+import { UserService } from '../../../services/user.service';
+import { Promotion, CreatePromotion } from '../../../models/promotion.model';
+
+// Admin: Promotions - manage discount promo codes.
+@Component({
+  selector: 'app-promotions',
+  templateUrl: './promotions.component.html',
+  styleUrls: ['./promotions.component.css']
+})
+export class PromotionsComponent implements OnInit {
+
+  promotions: Promotion[] = [];
+  errorMessage: string = '';
+  successMessage: string = '';
+  isLoading: boolean = false;
+
+  showForm: boolean = false;
+  isEditing: boolean = false;
+  editingPromoId: number = 0;
+
+  promoForm: CreatePromotion = this.getEmptyForm();
+
+  constructor(private userService: UserService) {}
+
+  ngOnInit(): void {
+    this.loadPromotions();
+  }
+
+  getEmptyForm(): CreatePromotion {
+    return {
+      code: '',
+      description: '',
+      discountPercent: 10,
+      startDate: '',
+      endDate: '',
+      isActive: true
+    };
+  }
+
+  loadPromotions(): void {
+    this.isLoading = true;
+
+    this.userService.getAllPromotions().subscribe({
+      next: (data) => {
+        this.promotions = data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load promotions.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  openCreateForm(): void {
+    this.promoForm = this.getEmptyForm();
+    this.isEditing = false;
+    this.showForm = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  openEditForm(promo: Promotion): void {
+    this.promoForm = {
+      code: promo.code,
+      description: promo.description,
+      discountPercent: promo.discountPercent,
+      startDate: promo.startDate.substring(0, 10),   // format for date input
+      endDate: promo.endDate.substring(0, 10),
+      isActive: promo.isActive
+    };
+    this.editingPromoId = promo.id;
+    this.isEditing = true;
+    this.showForm = true;
+  }
+
+  cancelForm(): void {
+    this.showForm = false;
+  }
+
+  savePromotion(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (this.isEditing) {
+      this.userService.updatePromotion(this.editingPromoId, this.promoForm).subscribe({
+        next: () => {
+          this.successMessage = 'Promotion updated.';
+          this.showForm = false;
+          this.loadPromotions();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to update promotion.';
+        }
+      });
+    } else {
+      this.userService.createPromotion(this.promoForm).subscribe({
+        next: () => {
+          this.successMessage = 'Promotion created.';
+          this.showForm = false;
+          this.loadPromotions();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to create promotion.';
+        }
+      });
+    }
+  }
+
+  deletePromotion(id: number): void {
+    if (!confirm('Delete this promotion?')) return;
+
+    this.userService.deletePromotion(id).subscribe({
+      next: () => {
+        this.successMessage = 'Promotion deleted.';
+        this.promotions = this.promotions.filter(p => p.id !== id);
+      },
+      error: () => {
+        this.errorMessage = 'Failed to delete promotion.';
+      }
+    });
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\bookings\bookings.component.html =====
+
+<div class="page-container">
+  <div class="page-header">
+    <h1>Book Your Room</h1>
+    <p>Fill in the details below to confirm your stay</p>
+  </div>
+
+  <!-- Room Summary -->
+  <div class="booking-layout">
+    <div class="room-summary card" *ngIf="room">
+      <img [src]="room.imageUrl || 'assets/room-placeholder.jpg'" [alt]="room.roomType" class="summary-image" />
+      <h3>Room {{ room.roomNumber }} — {{ room.roomType }}</h3>
+      <p>{{ room.description }}</p>
+      <p>👥 Max {{ room.capacity }} guests</p>
+      <p class="price-per-night">💰 ${{ room.price }} / night</p>
+
+      <!-- Total amount display -->
+      <div class="total-box" *ngIf="nights > 0">
+        <p>📅 {{ nights }} night(s)</p>
+        <p class="total-amount">Total: ${{ totalAmount | number:'1.2-2' }}</p>
+        <p class="promo-applied" *ngIf="appliedPromo">
+          🎉 Promo applied: {{ appliedPromo.discountPercent }}% off
+        </p>
+      </div>
+    </div>
+
+    <!-- Booking Form -->
+    <div class="booking-form card">
+      <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+      <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <form #bookingForm="ngForm" (ngSubmit)="onBook()">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="checkIn">Check-In Date</label>
+            <input
+              type="date"
+              id="checkIn"
+              name="checkIn"
+              [(ngModel)]="bookingData.checkInDate"
+              (change)="calculateTotal()"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="checkOut">Check-Out Date</label>
+            <input
+              type="date"
+              id="checkOut"
+              name="checkOut"
+              [(ngModel)]="bookingData.checkOutDate"
+              (change)="calculateTotal()"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="guests">Number of Guests</label>
+          <input
+            type="number"
+            id="guests"
+            name="guests"
+            [(ngModel)]="bookingData.numberOfGuests"
+            min="1"
+            [max]="room?.capacity || 1"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="specialRequests">Special Requests (Optional)</label>
+          <textarea
+            id="specialRequests"
+            name="specialRequests"
+            [(ngModel)]="bookingData.specialRequests"
+            rows="2"
+            placeholder="Late check-in, extra pillows, etc."
+          ></textarea>
+        </div>
+
+        <!-- Promo code section -->
+        <div class="promo-section">
+          <label for="promoCode">Promo Code (Optional)</label>
+          <div class="promo-row">
+            <input
+              type="text"
+              id="promoCode"
+              name="promoCode"
+              [(ngModel)]="promoCode"
+              placeholder="Enter promo code"
+            />
+            <button type="button" class="btn btn-outline" (click)="applyPromo()">Apply</button>
+          </div>
+          <span class="alert alert-error small" *ngIf="promoError">{{ promoError }}</span>
+          <span class="alert alert-success small" *ngIf="appliedPromo">
+            ✅ Code "{{ appliedPromo.code }}" applied — {{ appliedPromo.discountPercent }}% off
+          </span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Confirm Booking</span>
+          <span *ngIf="isLoading">Processing...</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\bookings\bookings.component.ts =====
+
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BookingService } from '../../services/booking.service';
+import { RoomService } from '../../services/room.service';
+import { UserService } from '../../services/user.service';
+import { CreateBooking } from '../../models/booking.model';
+import { Room } from '../../models/room.model';
+import { Promotion } from '../../models/promotion.model';
+
+// Bookings component - form for creating a new booking.
+@Component({
+  selector: 'app-bookings',
+  templateUrl: './bookings.component.html',
+  styleUrls: ['./bookings.component.css']
+})
+export class BookingsComponent implements OnInit {
+
+  // The booking form data
+  bookingData: CreateBooking = {
+    roomId: 0,
+    checkInDate: '',
+    checkOutDate: '',
+    numberOfGuests: 1,
+    specialRequests: '',
+    promotionCode: undefined
+  };
+
+  room: Room | null = null;         // The room being booked
+  promoCode: string = '';           // Promo code input
+  appliedPromo: Promotion | null = null;  // Applied promo
+  totalAmount: number = 0;          // Calculated total
+  nights: number = 0;               // Number of nights
+  hotelId: number = 0;
+
+  errorMessage: string = '';
+  successMessage: string = '';
+  promoError: string = '';
+  isLoading: boolean = false;
+
+  constructor(
+    private bookingService: BookingService,
+    private roomService: RoomService,
+    private userService: UserService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    // Read IDs from URL (api/bookings/:hotelId/:roomId)
+    this.hotelId = Number(this.route.snapshot.paramMap.get('hotelId'));
+    this.bookingData.roomId = Number(this.route.snapshot.paramMap.get('roomId'));
+    this.loadRoom();
+  }
+
+  loadRoom(): void {
+    this.roomService.getRoomById(this.bookingData.roomId).subscribe({
+      next: (data) => {
+        this.room = data;
+        this.calculateTotal();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load room details.';
+      }
+    });
+  }
+
+  // Recalculate total when dates change
+  calculateTotal(): void {
+    if (this.bookingData.checkInDate && this.bookingData.checkOutDate && this.room) {
+      const checkIn = new Date(this.bookingData.checkInDate);
+      const checkOut = new Date(this.bookingData.checkOutDate);
+
+      // Calculate number of nights
+      const diffTime = checkOut.getTime() - checkIn.getTime();
+      this.nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (this.nights > 0) {
+        this.totalAmount = this.nights * this.room.price;
+
+        // Apply discount if promo is applied
+        if (this.appliedPromo) {
+          const discount = (this.totalAmount * this.appliedPromo.discountPercent) / 100;
+          this.totalAmount = this.totalAmount - discount;
+        }
+      }
+    }
+  }
+
+  // Apply a promo code entered by user
+  applyPromo(): void {
+    this.promoError = '';
+    this.appliedPromo = null;
+
+    if (!this.promoCode.trim()) {
+      this.promoError = 'Please enter a promo code.';
+      return;
+    }
+
+    this.userService.validatePromoCode(this.promoCode).subscribe({
+      next: (promo) => {
+        this.appliedPromo = promo;
+        this.bookingData.promotionCode = promo.code;
+        this.calculateTotal();  // Recalculate with discount
+      },
+      error: () => {
+        this.promoError = 'Invalid or expired promo code.';
+      }
+    });
+  }
+
+  // Submit the booking
+  onBook(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (this.nights <= 0) {
+      this.errorMessage = 'Check-out date must be after check-in date.';
+      return;
+    }
+
+    if (this.room && this.bookingData.numberOfGuests > this.room.capacity) {
+      this.errorMessage = `Number of guests exceeds room capacity (${this.room.capacity}).`;
+      return;
+    }
+
+    this.isLoading = true;
+    this.bookingService.createBooking(this.bookingData).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.successMessage = 'Booking confirmed! Redirecting to My Bookings...';
+        setTimeout(() => {
+          this.router.navigate(['/my-bookings']);
+        }, 2000);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err.error?.message || 'Booking failed. Please try again.';
+      }
+    });
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\home\home.component.html =====
+
+<div class="home-container">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">Experience <span class="text-highlight">Ultimate</span> Luxury</h1>
+      <p class="hero-subtitle">Discover our handpicked collection of world-class hotels. Book your next unforgettable stay in minutes.</p>
+      <div class="hero-actions">
+        <a routerLink="/hotels" class="btn-hero">Explore Collection →</a>
+        <a routerLink="/register" class="btn btn-outline btn-lg">Join Member Club</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <div class="feature-card">
+      <div class="feature-icon-wrapper">
+        <span class="feature-icon">🏨</span>
+      </div>
+      <h3>Curated Selection</h3>
+      <p>Only the highest-rated luxury hotels make it to our platform.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrapper">
+        <span class="feature-icon">💎</span>
+      </div>
+      <h3>Best Rates</h3>
+      <p>Enjoy exclusive member prices and guaranteed best rates.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrapper">
+        <span class="feature-icon">⚡</span>
+      </div>
+      <h3>Instant Booking</h3>
+      <p>No waiting. Secure your room with just a few clicks.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrapper">
+        <span class="feature-icon">🛡️</span>
+      </div>
+      <h3>Safe Travels</h3>
+      <p>Your data and booking are protected by 256-bit encryption.</p>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section card">
+    <div class="cta-inner">
+      <h2>Ready for your next adventure?</h2>
+      <p>Join over 50,000+ happy travelers today.</p>
+      <a routerLink="/register" class="btn btn-secondary btn-lg">Create Free Account</a>
+    </div>
+  </section>
+</div>
+
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\home\home.component.ts =====
+
+import { Component } from '@angular/core';
+
+// Home / landing page component.
+// Shows a hero section and feature highlights.
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css']
+})
+export class HomeComponent {}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\hotels\hotels.component.html =====
+
+<div class="page-container">
+  <div class="page-header">
+    <h1>Explore Hotels</h1>
+    <p>Find your perfect destination from our luxury collection</p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar card">
+    <div class="form-group search-input">
+      <input 
+        type="text" 
+        [(ngModel)]="searchCity" 
+        placeholder="Search by city (e.g. Paris, Tokyo)..." 
+        (keyup.enter)="searchHotels()"
+      />
+    </div>
+    <button class="btn btn-primary" (click)="searchHotels()">
+      <span class="icon">🔍</span> Search
+    </button>
+    <button class="btn btn-outline" (click)="loadHotels()">Clear</button>
+  </div>
+
+  <!-- States -->
+  <div class="loading" *ngIf="isLoading">Searching for the best hotels...</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  
+  <div class="empty-state" *ngIf="!isLoading && hotels.length === 0 && !errorMessage">
+    <p>No hotels found in this city. Try another one!</p>
+    <button class="btn btn-outline" (click)="loadHotels()">View All Hotels</button>
+  </div>
+
+  <!-- Hotels Grid -->
+  <div class="hotels-grid" *ngIf="!isLoading && hotels.length > 0">
+    <div *ngFor="let hotel of hotels" class="hotel-card">
+      <div class="hotel-image-container">
+        <img 
+          [src]="hotel.imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'"
+          (error)="hotel.imageUrl='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'"
+          [alt]="hotel.name"
+          class="hotel-image"
+        />
+        <div class="hotel-rating-badge">
+          ⭐ {{ hotel.starRating || 4.5 }}
+        </div>
+      </div>
+
+      <div class="hotel-body">
+        <div class="hotel-header">
+          <h3 class="hotel-name">{{ hotel.name }}</h3>
+        </div>
+        
+        <p class="hotel-location">📍 {{ hotel.city }}, {{ hotel.country }}</p>
+        <p class="hotel-description">{{ hotel.description || 'Experience ultimate luxury and comfort in the heart of the city.' }}</p>
+        
+        <div class="hotel-contact">
+          <span *ngIf="hotel.phoneNumber">📞 {{ hotel.phoneNumber }}</span>
+          <span *ngIf="hotel.email">✉️ {{ hotel.email }}</span>
+        </div>
+
+        <div class="hotel-amenities">
+          <span *ngFor="let a of hotel.amenities | slice:0:3" class="badge">{{ a }}</span>
+          <span *ngIf="hotel.amenities && hotel.amenities.length > 3" class="badge-more">+{{ hotel.amenities.length - 3 }}</span>
+        </div>
+
+        <button class="btn btn-primary btn-full mt-3" (click)="viewRooms(hotel.id)">
+          View Rooms →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\hotels\hotels.component.ts =====
+
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { HotelService } from '../../services/hotel.service';
+import { Hotel } from '../../models/hotel.model';
+
+@Component({
+  selector: 'app-hotels',
+  templateUrl: './hotels.component.html',
+  styleUrls: ['./hotels.component.css']
+})
+export class HotelsComponent implements OnInit {
+
+  hotels: Hotel[] = [];
+  searchCity: string = '';
+  errorMessage: string = '';
+  isLoading: boolean = false;
+
+  constructor(
+    private hotelService: HotelService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadHotels();
+  }
+
+  loadHotels(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.hotelService.getAllHotels().subscribe({
+      next: (data) => {
+        this.hotels = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to load hotels. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  searchHotels(): void {
+    if (!this.searchCity.trim()) {
+      this.loadHotels();
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.hotelService.searchHotelsByCity(this.searchCity).subscribe({
+      next: (data) => {
+        this.hotels = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.errorMessage = 'Search failed. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  viewRooms(id: number): void {
+    this.router.navigate(['/rooms', id]);
+  }
+}
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\login\login.component.html =====
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <span class="auth-icon">🏨</span>
+      <h2>Welcome Back</h2>
+      <p>Login to your StayEase account</p>
+    </div>
+
+    <!-- Success / Error Messages -->
+    <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+    <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <!-- Login Form (template-driven) -->
+    <form #loginForm="ngForm" (ngSubmit)="onLogin()">
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          [(ngModel)]="loginData.email"
+          placeholder="you@example.com"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          [(ngModel)]="loginData.password"
+          placeholder="••••••••"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Login</span>
+        <span *ngIf="isLoading">Logging in...</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Don't have an account? <a routerLink="/register">Register here</a></p>
+    </div>
+  </div>
+</div>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\login\login.component.ts =====
+
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { LoginRequest } from '../../models/user.model';
+
+// Login component - handles user login form submission.
+@Component({
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
+})
+export class LoginComponent {
+
+  // The login form data bound via ngModel
+  loginData: LoginRequest = {
+    email: '',
+    password: ''
+  };
+
+  // Message strings to show feedback to the user
+  errorMessage: string = '';
+  successMessage: string = '';
+  isLoading: boolean = false;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  // Called when the user submits the login form
+  onLogin(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.isLoading = true;
+
+    this.authService.login(this.loginData).subscribe({
+      next: (response) => {
+        // Save token and user info in localStorage
+        this.authService.saveAuthData(response);
+        this.successMessage = 'Login successful! Redirecting...';
+        this.isLoading = false;
+
+        // Redirect admin to admin panel, users to hotels
+        if (response.role === 1) { // 1 = Admin
+          this.router.navigate(['/admin/manage-hotels']);
+        } else {
+          this.router.navigate(['/hotels']);
+        }
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err.error?.message || 'Invalid email or password. Please try again.';
+      }
+    });
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\my-bookings\my-bookings.component.html =====
+
+<div class="page-container">
+  <div class="page-header">
+    <h1>My Bookings</h1>
+    <p>View and manage your hotel reservations</p>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="loading" *ngIf="isLoading">Loading your bookings...</div>
+
+  <div class="empty-state" *ngIf="!isLoading && bookings.length === 0 && !errorMessage">
+    <p>You have no bookings yet.</p>
+    <a routerLink="/hotels" class="btn btn-primary">Browse Hotels</a>
+  </div>
+
+  <!-- Bookings list -->
+  <div class="bookings-grid" *ngIf="!isLoading && bookings.length > 0">
+    <div class="booking-card card shadow-hover" *ngFor="let booking of bookings; let i = index">
+      <div class="booking-card-header">
+        <div class="hotel-info">
+          <span class="hotel-icon">🏨</span>
+          <h3>{{ booking.hotelName || 'Premium Hotel' }}</h3>
+        </div>
+        <span class="status-badge" [ngClass]="'status-' + (booking.status.toLowerCase() || 'pending')">
+          {{ booking.status }}
+        </span>
+      </div>
+
+      <div class="booking-card-content">
+        <div class="booking-item">
+          <span class="label">Room</span>
+          <span class="value">{{ booking.roomNumber || (booking.roomId ? 'Room #' + booking.roomId : 'Premium Suite') }}</span>
+        </div>
+        <div class="booking-item">
+          <span class="label">Dates</span>
+          <span class="value">{{ booking.checkInDate | date:'mediumDate' }} - {{ booking.checkOutDate | date:'mediumDate' }}</span>
+        </div>
+        <div class="booking-item">
+          <span class="label">Total Amount</span>
+          <span class="value amount">{{ booking.totalAmount > 0 ? (booking.totalAmount | currency) : 'TBD' }}</span>
+        </div>
+      </div>
+
+      <div class="booking-card-footer">
+        <span class="booking-date">Booked on: {{ (booking.createdAt | date:'shortDate') || 'Recently' }}</span>
+        <div class="booking-actions">
+          <button class="btn btn-outline btn-sm" *ngIf="booking.status !== 'Cancelled'" (click)="onCancelBooking(booking.id)">Cancel</button>
+          <button class="btn btn-primary btn-sm" (click)="onRebook(booking)">Rebook</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\my-bookings\my-bookings.component.ts =====
+
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { BookingService } from '../../services/booking.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Booking } from '../../models/booking.model';
+
+// My Bookings component - shows the current user's booking history.
+@Component({
+  selector: 'app-my-bookings',
+  templateUrl: './my-bookings.component.html',
+  styleUrls: ['./my-bookings.component.css']
+})
+export class MyBookingsComponent implements OnInit {
+
+  bookings: Booking[] = [];
+  errorMessage: string = '';
+  successMessage: string = '';
+  isLoading: boolean = false;
+
+  constructor(
+    private bookingService: BookingService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.loadMyBookings();
+  }
+
+  loadMyBookings(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.bookingService.getMyBookings().subscribe({
+      next: (data) => {
+        this.bookings = data;
+        this.isLoading = false;
+      },
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 404) {
+          this.bookings = [];
+        } else {
+          this.errorMessage = 'Failed to load your bookings. Please try again later.';
+        }
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onCancelBooking(bookingId: number): void {
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+    this.isLoading = true;
+    this.bookingService.updateBookingStatus({ bookingId, status: 'Cancelled' }).subscribe({
+      next: () => {
+        this.successMessage = 'Booking cancelled successfully.';
+        this.loadMyBookings();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to cancel the booking. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onRebook(booking: Booking): void {
+    const hotelId = booking.hotelId || 0;
+    this.router.navigate(['/bookings', hotelId, booking.roomId]); 
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\navbar\navbar.component.html =====
+
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span class="brand-icon">🏨</span>
+    <a routerLink="/home" class="brand-name">StayEase</a>
+  </div>
+
+  <ul class="navbar-links">
+    <li><a routerLink="/home" routerLinkActive="active">Home</a></li>
+    <li><a routerLink="/hotels" routerLinkActive="active">Hotels</a></li>
+
+    <!-- Show only when logged in as a regular user -->
+    <li *ngIf="authService.isLoggedIn() && !authService.isAdmin()">
+      <a routerLink="/my-bookings" routerLinkActive="active">My Bookings</a>
+    </li>
+
+    <!-- Show only when logged in as Admin -->
+    <li *ngIf="authService.isAdmin()" class="dropdown">
+      <span class="dropdown-toggle">Admin ▾</span>
+      <ul class="dropdown-menu">
+        <li><a routerLink="/admin/manage-hotels">Manage Hotels</a></li>
+        <li><a routerLink="/admin/manage-rooms">Manage Rooms</a></li>
+        <li><a routerLink="/admin/manage-amenities">Manage Amenities</a></li>
+        <li><a routerLink="/admin/manage-bookings">Manage Bookings</a></li>
+        <li><a routerLink="/admin/promotions">Promotions</a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <div class="navbar-auth">
+    <!-- Show when NOT logged in -->
+    <ng-container *ngIf="!authService.isLoggedIn()">
+      <a routerLink="/login" class="btn btn-outline">Login</a>
+      <a routerLink="/register" class="btn btn-primary">Register</a>
+    </ng-container>
+
+    <!-- Show when logged in -->
+    <ng-container *ngIf="authService.isLoggedIn()">
+      <span class="user-greeting">👋 {{ authService.getFullName() }}</span>
+      <button class="btn btn-outline" (click)="logout()">Logout</button>
+    </ng-container>
+  </div>
+</nav>
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\navbar\navbar.component.ts =====
+
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+
+// Navbar component - shown at the top of every page.
+// It shows different links based on login status and role.
+@Component({
+  selector: 'app-navbar',
+  templateUrl: './navbar.component.html',
+  styleUrls: ['./navbar.component.css']
+})
+export class NavbarComponent {
+
+  constructor(
+    public authService: AuthService,
+    private router: Router
+  ) {}
+
+  // Log out and go to login page
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\register\register.component.html =====
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <span class="auth-icon">🏨</span>
+      <h2>Create Account</h2>
+      <p>Join StayEase and start exploring</p>
+    </div>
+
+    <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+    <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <form #registerForm="ngForm" (ngSubmit)="onRegister()">
+
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" name="fullName" [(ngModel)]="registerData.fullName" placeholder="John"
+          required />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" [(ngModel)]="registerData.email" placeholder="you@example.com"
+          required />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" [(ngModel)]="registerData.phone" placeholder="+1 234 567 8900"
+          required />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" [(ngModel)]="registerData.password"
+          placeholder="Min 6 characters" required />
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword"
+          placeholder="Repeat password" required />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Create Account</span>
+        <span *ngIf="isLoading">Registering...</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/login">Login here</a></p>
+    </div>
+  </div>
+</div>
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\register\register.component.ts =====
+
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { RegisterRequest } from '../../models/user.model';
+
+// Register component - handles new user signup.
+@Component({
+  selector: 'app-register',
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css']
+})
+export class RegisterComponent {
+
+  // The register form data bound via ngModel
+  registerData: RegisterRequest = {
+    fullName: '',
+    email: '',
+    phone: '',
+    password: ''
+  };
+
+  // Confirm password field (not sent to server)
+  confirmPassword: string = '';
+
+  errorMessage: string = '';
+  successMessage: string = '';
+  isLoading: boolean = false;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) { }
+
+  // Called when user submits the registration form
+  onRegister(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    // Basic password match check
+    if (this.registerData.password !== this.confirmPassword) {
+      this.errorMessage = 'Passwords do not match.';
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.authService.register(this.registerData).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.successMessage = 'Registration successful! Redirecting to login...';
+
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err.error?.message || 'Registration failed. Please try again.';
+      }
+    });
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\rooms\rooms.component.html =====
+
+<div class="page-container">
+  <div class="page-header">
+    <h1>Available Rooms</h1>
+    <p>Select a room and start your luxury stay</p>
+    <a routerLink="/hotels" class="btn btn-outline">← Back to Hotels</a>
+  </div>
+
+  <!-- States -->
+  <div class="loading" *ngIf="isLoading">Finding the best rooms for you...</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="empty-state" *ngIf="!isLoading && rooms.length === 0 && !errorMessage">
+    <div class="empty-icon">🛏️</div>
+    <p>No rooms are available for this hotel right now.</p>
+    <a routerLink="/hotels" class="btn btn-primary">Check Other Hotels</a>
+  </div>
+
+  <!-- Rooms Grid -->
+  <div class="rooms-grid" *ngIf="!isLoading && rooms.length > 0">
+    <div class="room-card" *ngFor="let room of rooms">
+      <div class="room-image-container">
+        <img 
+          [src]="room.imageUrl || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80'" 
+          [alt]="room.roomType" 
+          class="room-image" 
+        />
+        <div class="room-price-tag">
+          ${{ room.price }}<span>/night</span>
+        </div>
+      </div>
+
+      <div class="room-body">
+        <div class="room-header">
+          <h3 class="room-number">Room {{ room.roomNumber }}</h3>
+          <span class="badge">{{ room.roomType }}</span>
+        </div>
+
+        <p class="room-description">{{ room.description || 'A spacious and well-appointed room featuring modern amenities and elegant decor.' }}</p>
+
+        <div class="room-meta">
+          <div class="meta-item">
+            <span class="icon">👥</span>
+            <span>Capacity: {{ room.capacity }} Guests</span>
+          </div>
+          <div class="meta-item">
+            <span class="status-indicator" [class.available]="room.isAvailable"></span>
+            <span>{{ room.isAvailable ? 'Available' : 'Booked' }}</span>
+          </div>
+        </div>
+
+        <button
+          class="btn btn-primary btn-full mt-3"
+          (click)="bookRoom(room.id)"
+          [disabled]="!room.isAvailable"
+        >
+          {{ room.isAvailable ? 'Book This Room' : 'Sold Out' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\components\rooms\rooms.component.ts =====
+
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { RoomService } from '../../services/room.service';
+import { Room } from '../../models/room.model';
+
+// Rooms component - shows rooms available in a specific hotel.
+@Component({
+  selector: 'app-rooms',
+  templateUrl: './rooms.component.html',
+  styleUrls: ['./rooms.component.css']
+})
+export class RoomsComponent implements OnInit {
+
+  rooms: Room[] = [];
+  hotelId: number = 0;
+  errorMessage: string = '';
+  isLoading: boolean = false;
+
+  constructor(
+    private roomService: RoomService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    // Read the hotelId from the URL (e.g. /rooms/3)
+    this.hotelId = Number(this.route.snapshot.paramMap.get('hotelId'));
+    this.loadRooms();
+  }
+
+  loadRooms(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.roomService.getRoomsByHotel(this.hotelId).subscribe({
+      next: (data) => {
+        this.rooms = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to load rooms. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Navigate to the booking form for a selected room
+  bookRoom(roomId: number): void {
+    this.router.navigate(['/bookings', this.hotelId, roomId]);
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\guards\auth.guard.ts =====
+
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
+
+// This guard protects routes that require the user to be logged in.
+// If no token is found in localStorage, it redirects to /login.
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate {
+
+  constructor(private router: Router) {}
+
+  canActivate(): boolean {
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      // Token exists, allow navigation
+      return true;
+    }
+
+    // No token - redirect to login
+    this.router.navigate(['/login']);
+    return false;
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\guards\role.guard.ts =====
+
+import { Injectable } from '@angular/core';
+import { CanActivate, Router, ActivatedRouteSnapshot } from '@angular/router';
+
+// This guard protects admin-only routes.
+// It checks the user's role stored in localStorage.
+// If the role is not 'Admin', it redirects to /home.
+@Injectable({
+  providedIn: 'root'
+})
+export class RoleGuard implements CanActivate {
+
+  constructor(private router: Router) {}
+
+  canActivate(route: ActivatedRouteSnapshot): boolean {
+    const role = localStorage.getItem('role');
+
+    // Get the required role from the route data
+    const requiredRole = route.data['role'] as string;
+
+    if (role === requiredRole) {
+      // Role matches, allow navigation
+      return true;
+    }
+
+    // Role doesn't match, redirect to home
+    this.router.navigate(['/home']);
+    return false;
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\interceptors\auth.interceptor.ts =====
+
+import { Injectable } from '@angular/core';
+import {
+  HttpInterceptor,
+  HttpRequest,
+  HttpHandler,
+  HttpEvent
+} from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+// This interceptor automatically adds the JWT token to every HTTP request.
+// It reads the token from localStorage and sets it in the Authorization header.
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
+
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // Read the token from localStorage
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      // Clone the request and add the Authorization header
+      const clonedRequest = request.clone({
+        headers: request.headers.set('Authorization', `Bearer ${token}`)
+      });
+
+      // Pass the modified request forward
+      return next.handle(clonedRequest);
+    }
+
+    // No token - pass the request as-is
+    return next.handle(request);
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\models\amenity.model.ts =====
+
+// Represents a single amenity (e.g. WiFi, Pool, Gym)
+export interface Amenity {
+  id: number;
+  name: string;
+  icon?: string;    // optional icon class or emoji
+  description?: string;
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\models\booking.model.ts =====
+
+// Represents a booking made by a user
+export interface Booking {
+  id: number;
+  userId: number;
+  userName?: string;
+  roomId: number;
+  hotelId?: number;
+  roomNumber?: string;
+  hotelName?: string;
+  checkInDate: string;      // ISO date string
+  checkOutDate: string;     // ISO date string
+  totalAmount: number;
+  numberOfGuests: number;
+  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+  specialRequests?: string;
+  createdAt?: string;
+  promotionId?: number;
+}
+
+// Used when creating a new booking
+export interface CreateBooking {
+  roomId: number;
+  checkInDate: string;
+  checkOutDate: string;
+  numberOfGuests: number;
+  specialRequests?: string;
+  promotionCode?: string;
+}
+
+// Used when updating booking status (admin)
+export interface UpdateBookingStatus {
+  bookingId: number;
+  status: string;
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\models\hotel.model.ts =====
+
+export interface Hotel {
+  id: number;
+  name: string;
+  description: string;
+  location: string;
+  city: string;
+  country: string;
+  starRating: number;
+  phoneNumber: string;
+  email: string;
+  imageUrl: string;
+  amenities: string[]; // Normalized in service
+  
+  // Optional stats
+  totalRooms?: number;
+  availableRooms?: number;
+  lowestPrice?: number;
+}
+
+export interface CreateHotel {
+  name: string;
+  description: string;
+  location: string;
+  city: string;
+  country: string;
+  starRating: number;
+  phoneNumber: string;
+  email: string;
+  amenityIds: number[]; // Changed to array of numbers
+  imageUrl: string;
+}
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\models\promotion.model.ts =====
+
+// Represents a promotional discount
+export interface Promotion {
+  id: number;
+  code: string;             // promo code entered by user
+  description: string;
+  discountPercent: number;  // e.g. 20 for 20% off
+  startDate: string;        // ISO date
+  endDate: string;          // ISO date
+  isActive: boolean;
+}
+
+// Used when creating or updating a promotion
+export interface CreatePromotion {
+  code: string;
+  description: string;
+  discountPercent: number;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\models\room.model.ts =====
+
+// Represents a room inside a hotel
+export interface Room {
+  id: number;
+  hotelId: number;
+  hotelName: string;
+  roomNumber: string;
+  roomType: string;
+  price: number;            // Matches 'Price' in backend
+  capacity: number;         // Matches 'Capacity' in backend
+  description: string;
+  imageUrl: string;
+  isAvailable: boolean;
+}
+
+// Used when creating or updating a room
+export interface CreateRoom {
+  hotelId: number;
+  roomNumber: string;
+  roomType: string;
+  price: number;
+  capacity: number;
+  description: string;
+  imageUrl: string;
+  isAvailable: boolean;
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\models\user.model.ts =====
+
+// Represents a user in the system (guest or admin)
+export interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  role: 'Admin' | 'User';
+  createdAt?: string;
+}
+
+// Used for login request
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+// Used for registration request
+export interface RegisterRequest {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+}
+
+// Response from the server after successful login
+export interface AuthResponse {
+  token: string;
+  role: number;
+  email: string;
+  userId: number;
+  fullName: string;
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\services\auth.service.ts =====
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { LoginRequest, RegisterRequest, AuthResponse } from '../models/user.model';
+
+// AuthService handles login, registration, and user session data (localStorage).
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+
+  private apiUrl = environment.apiUrl + "/auth";
+
+  constructor(private http: HttpClient) { }
+
+  // Send login credentials to the backend
+  login(credentials: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials);
+  }
+
+  // Send registration data to the backend
+  register(data: RegisterRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/register`, data);
+  }
+
+  // Save auth data to localStorage after successful login
+  saveAuthData(response: AuthResponse): void {
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('role', response.role.toString()); // Store as string
+    localStorage.setItem('email', response.email);
+    localStorage.setItem('userId', response.userId.toString());
+    localStorage.setItem('fullName', response.fullName);
+  }
+
+  // Remove all auth data from localStorage (logout)
+  logout(): void {
+    localStorage.clear();
+  }
+
+  // Check if the user is currently logged in
+  isLoggedIn(): boolean {
+    return localStorage.getItem('token') !== null;
+  }
+
+  // Get the current user's role
+  getRole(): string {
+    return localStorage.getItem('role') || '';
+  }
+
+  // Get the current user's first name
+  getFullName(): string {
+    return localStorage.getItem('fullName') || '';
+  }
+
+  // Check if the current user is an admin
+  isAdmin(): boolean {
+    return this.getRole() === '1'; // 1 = Admin enum value
+  }
+
+  // Get the current user's ID
+  getUserId(): number {
+    return Number(localStorage.getItem('userId'));
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\services\booking.service.ts =====
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { Booking, CreateBooking, UpdateBookingStatus } from '../models/booking.model';
+
+// BookingService handles all booking-related API calls.
+@Injectable({
+  providedIn: 'root'
+})
+export class BookingService {
+
+  private apiUrl = `${environment.apiUrl}/bookings`;
+
+  constructor(private http: HttpClient) { }
+
+  // 🔥 Normalize booking data from backend (handles PascalCase and nested objects)
+  private mapBooking(b: any): Booking {
+    return {
+      id: b.id || b.Id,
+      userId: b.userId || b.UserId || b.user?.id || b.user?.userId || b.User?.Id,
+      userName: b.userName || b.UserName || b.user?.fullName || b.user?.name || b.User?.FullName,
+      roomId: b.roomId || b.RoomId || b.room?.id || b.Room?.Id,
+      hotelId: b.hotelId || b.HotelId || b.room?.hotelId || b.Room?.HotelId,
+      roomNumber: b.roomNumber || b.RoomNumber || b.room?.roomNumber || b.Room?.RoomNumber,
+      hotelName: b.hotelName || b.HotelName || b.hotel?.name || b.Hotel?.Name,
+      checkInDate: b.checkInDate || b.CheckInDate,
+      checkOutDate: b.checkOutDate || b.CheckOutDate,
+      totalAmount: Number(b.totalAmount ?? b.TotalAmount ?? b.price ?? b.Price ?? b.totalPrice ?? b.TotalPrice ?? 0),
+      numberOfGuests: b.numberOfGuests || b.NumberOfGuests || 0,
+      status: b.status || b.Status || 'Pending',
+      specialRequests: b.specialRequests || b.SpecialRequests,
+      createdAt: b.createdAt || b.CreatedAt
+    };
+  }
+
+  // ✅ Create booking
+  createBooking(booking: CreateBooking): Observable<any> {
+    return this.http.post(this.apiUrl, booking);
+  }
+
+  // ✅ Get current user bookings
+  getMyBookings(): Observable<Booking[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/my-bookings`).pipe(
+      map(res => res.map(b => this.mapBooking(b)))
+    );
+  }
+
+  // ✅ Admin: Get all bookings
+  getAllBookings(): Observable<Booking[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/all`).pipe(
+      map(res => res.map(b => this.mapBooking(b)))
+    );
+  }
+
+  // ✅ Admin: Update booking status
+  updateBookingStatus(dto: UpdateBookingStatus): Observable<any> {
+    return this.http.put(`${this.apiUrl}/status`, dto);
+  }
+}
+
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\services\hotel.service.ts =====
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { Hotel, CreateHotel } from '../models/hotel.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class HotelService {
+
+  private apiUrl = `${environment.apiUrl}/hotels`;
+
+  constructor(private http: HttpClient) { }
+
+  // 🔐 JWT Headers
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+  }
+
+  // 🔥 Normalize response types
+  private mapHotel(h: any): Hotel {
+    let amenities: string[] = [];
+    
+    if (typeof h.amenities === 'string') {
+      amenities = h.amenities.split(',').map((a: string) => a.trim()).filter((a: string) => a.length > 0);
+    } else if (Array.isArray(h.amenities)) {
+      amenities = typeof h.amenities[0] === 'string'
+        ? h.amenities
+        : h.amenities.map((a: any) => a.name || a.toString());
+    }
+
+    return {
+      id: h.id,
+      name: h.name,
+      description: h.description,
+      location: h.location,
+      city: h.city,
+      country: h.country,
+      starRating: h.starRating,
+      phoneNumber: h.phoneNumber,
+      email: h.email,
+      imageUrl: h.imageUrl,
+      amenities: amenities,
+      totalRooms: h.totalRooms,
+      availableRooms: h.availableRooms,
+      lowestPrice: h.lowestPrice
+    };
+  }
+
+  // ✅ GET ALL
+  getAllHotels(): Observable<Hotel[]> {
+    return this.http.get<any[]>(this.apiUrl).pipe(
+      map(res => res.map(h => this.mapHotel(h)))
+    );
+  }
+
+  // ✅ GET BY ID
+  getHotelById(id: number): Observable<Hotel> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+      map(h => this.mapHotel(h))
+    );
+  }
+
+  // ✅ SEARCH
+  searchHotelsByCity(city: string): Observable<Hotel[]> {
+    let params = new HttpParams().set('city', city);
+    return this.http.get<any[]>(`${this.apiUrl}/search`, { params }).pipe(
+      map(res => res.map(h => this.mapHotel(h)))
+    );
+  }
+
+  // 🛠 ADMIN: Create
+  createHotel(hotel: CreateHotel): Observable<Hotel> {
+    return this.http.post<any>(this.apiUrl, hotel, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(h => this.mapHotel(h))
+    );
+  }
+
+  // 🛠 ADMIN: Update
+  updateHotel(id: number, hotel: CreateHotel): Observable<Hotel> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, hotel, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(h => this.mapHotel(h))
+    );
+  }
+
+  // 🛠 ADMIN: Delete
+  deleteHotel(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  // 🛠 ADMIN: Add Amenity
+  addAmenity(name: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/amenity`, { name }, {
+      headers: this.getHeaders()
+    });
+  }
+
+  // 🛠 ADMIN: Get All Amenities
+  getAllAmenities(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/amenity`, {
+      headers: this.getHeaders()
+    });
+  }
+}
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\services\room.service.ts =====
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { Room, CreateRoom } from '../models/room.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class RoomService {
+
+  private roomsUrl = `${environment.apiUrl}/rooms`;
+
+  constructor(private http: HttpClient) {}
+
+  // 🔐 JWT Header
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+  }
+
+  // 🔄 Normalize response
+  private mapRoom(r: any): Room {
+    return {
+      id: r.id || r.Id,
+      hotelId: r.hotelId || r.HotelId || 0,
+      hotelName: r.hotelName || r.HotelName || '',
+      roomNumber: r.roomNumber || r.RoomNumber || '',
+      roomType: r.roomType || r.RoomType,
+      price: Number(r.price ?? r.Price ?? r.pricePerNight ?? r.PricePerNight ?? 0),
+      capacity: Number(r.capacity ?? r.Capacity ?? r.maxOccupancy ?? r.MaxOccupancy ?? 1),
+      description: r.description || r.Description || '',
+      imageUrl: r.imageUrl || r.ImageUrl || '',
+      isAvailable: r.isAvailable ?? r.IsAvailable
+    };
+  }
+
+  // ✅ Get all rooms (Admin)
+  getAllRooms(): Observable<Room[]> {
+    return this.http.get<any[]>(`${this.roomsUrl}/all`, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(res => res.map(r => this.mapRoom(r)))
+    );
+  }
+
+  // ✅ Get rooms by hotel
+  getRoomsByHotel(hotelId: number): Observable<Room[]> {
+    return this.http.get<any[]>(`${this.roomsUrl}/hotel/${hotelId}`).pipe(
+      map(res => res.map(r => this.mapRoom(r)))
+    );
+  }
+
+  // ✅ Get single room
+  getRoomById(roomId: number): Observable<Room> {
+    return this.http.get<any>(`${this.roomsUrl}/${roomId}`).pipe(
+      map(r => this.mapRoom(r))
+    );
+  }
+
+  // ✅ Create room
+  createRoom(room: CreateRoom): Observable<Room> {
+    return this.http.post<Room>(this.roomsUrl, room, {
+      headers: this.getHeaders()
+    });
+  }
+
+  // ✅ Update room
+  updateRoom(roomId: number, room: CreateRoom): Observable<Room> {
+    return this.http.put<Room>(`${this.roomsUrl}/${roomId}`, room, {
+      headers: this.getHeaders()
+    });
+  }
+
+  // ✅ Delete room
+  deleteRoom(roomId: number): Observable<any> {
+    return this.http.delete(`${this.roomsUrl}/${roomId}`, {
+      headers: this.getHeaders(),
+      responseType: 'text'
+    });
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\services\user.service.ts =====
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { User } from '../models/user.model';
+import { Promotion, CreatePromotion } from '../models/promotion.model';
+
+// UserService handles user profile and admin promotion management.
+@Injectable({
+  providedIn: 'root'
+})
+export class UserService {
+
+  private apiUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient) {}
+
+  // Get the current logged-in user's profile
+  getMyProfile(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/users/me`);
+  }
+
+  // Admin: Get all users
+  getAllUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/users`);
+  }
+
+  // Admin: Get all promotions
+  getAllPromotions(): Observable<Promotion[]> {
+    return this.http.get<Promotion[]>(`${this.apiUrl}/promotions/all`);
+  }
+
+  // Admin: Create a new promotion
+  createPromotion(promo: CreatePromotion): Observable<Promotion> {
+    return this.http.post<Promotion>(`${this.apiUrl}/promotions`, promo);
+  }
+
+  // Admin: Update a promotion
+  updatePromotion(id: number, promo: CreatePromotion): Observable<Promotion> {
+    return this.http.put<Promotion>(`${this.apiUrl}/promotions/${id}`, promo);
+  }
+
+  // Admin: Delete a promotion
+  deletePromotion(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/promotions/${id}`);
+  }
+
+  // Validate a promo code (for users during booking)
+  validatePromoCode(code: string): Observable<Promotion> {
+    return this.http.get<Promotion>(`${this.apiUrl}/promotions/validate/${code}`);
+  }
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\app-routing.module.ts =====
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+
+// Import all components
+import { HomeComponent }           from './components/home/home.component';
+import { LoginComponent }          from './components/login/login.component';
+import { RegisterComponent }       from './components/register/register.component';
+import { HotelsComponent }         from './components/hotels/hotels.component';
+import { RoomsComponent }          from './components/rooms/rooms.component';
+import { BookingsComponent }       from './components/bookings/bookings.component';
+import { MyBookingsComponent }     from './components/my-bookings/my-bookings.component';
+import { ManageHotelsComponent }   from './components/admin/manage-hotels/manage-hotels.component';
+import { ManageRoomsComponent }    from './components/admin/manage-rooms/manage-rooms.component';
+import { ManageBookingsComponent } from './components/admin/manage-bookings/manage-bookings.component';
+import { PromotionsComponent }     from './components/admin/promotions/promotions.component';
+import { ManageAmenitiesComponent } from './components/admin/manage-amenities/manage-amenities.component';
+
+// Import guards
+import { AuthGuard } from './guards/auth.guard';
+import { RoleGuard } from './guards/role.guard';
+
+// Define all application routes
+const routes: Routes = [
+  // Default redirect
+  { path: '', redirectTo: '/home', pathMatch: 'full' },
+
+  // Public routes (no login required)
+  { path: 'home',     component: HomeComponent },
+  { path: 'login',    component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'hotels',   component: HotelsComponent },
+
+  // hotelId is a URL parameter (e.g. /rooms/3)
+  { path: 'rooms/:hotelId', component: RoomsComponent },
+
+  // Protected routes - user must be logged in
+  {
+    path: 'bookings/:hotelId/:roomId',
+    component: BookingsComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'my-bookings',
+    component: MyBookingsComponent,
+    canActivate: [AuthGuard]
+  },
+
+  // Admin-only routes - must be logged in AND have role 'Admin'
+  {
+    path: 'admin/manage-hotels',
+    component: ManageHotelsComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: '1' }
+  },
+  {
+    path: 'admin/manage-rooms',
+    component: ManageRoomsComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: '1' }
+  },
+  {
+    path: 'admin/manage-bookings',
+    component: ManageBookingsComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: '1' }
+  },
+  {
+    path: 'admin/promotions',
+    component: PromotionsComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: '1' }
+  },
+  {
+    path: 'admin/manage-amenities',
+    component: ManageAmenitiesComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: '1' }
+  },
+
+  // Catch-all wildcard - redirect unknown routes to home
+  { path: '**', redirectTo: '/home' }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule {}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\app.component.html =====
+
+<!-- Navbar always visible at top -->
+<app-navbar></app-navbar>
+
+<!-- Router outlet renders the current route's component here -->
+<router-outlet></router-outlet>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\app.component.ts =====
+
+import { Component } from '@angular/core';
+
+// Root component - the entry point of the application.
+// It renders the navbar and the router outlet (which shows the current route's component).
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  title = 'StayEase Hotel Booking';
+}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\app\app.module.ts =====
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';             // For [(ngModel)] - template-driven forms
+import { CommonModule } from '@angular/common';            // For *ngIf, *ngFor, pipes
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http'; // For HTTP calls
+
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+
+// Components
+import { NavbarComponent }         from './components/navbar/navbar.component';
+import { HomeComponent }           from './components/home/home.component';
+import { LoginComponent }          from './components/login/login.component';
+import { RegisterComponent }       from './components/register/register.component';
+import { HotelsComponent }         from './components/hotels/hotels.component';
+import { RoomsComponent }          from './components/rooms/rooms.component';
+import { BookingsComponent }       from './components/bookings/bookings.component';
+import { MyBookingsComponent }     from './components/my-bookings/my-bookings.component';
+import { ManageHotelsComponent }   from './components/admin/manage-hotels/manage-hotels.component';
+import { ManageRoomsComponent }    from './components/admin/manage-rooms/manage-rooms.component';
+import { ManageBookingsComponent } from './components/admin/manage-bookings/manage-bookings.component';
+import { PromotionsComponent }     from './components/admin/promotions/promotions.component';
+
+// Interceptor
+import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { ManageAmenitiesComponent } from './components/admin/manage-amenities/manage-amenities.component';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    NavbarComponent,
+    HomeComponent,
+    LoginComponent,
+    RegisterComponent,
+    HotelsComponent,
+    RoomsComponent,
+    BookingsComponent,
+    MyBookingsComponent,
+    ManageHotelsComponent,
+    ManageRoomsComponent,
+    ManageBookingsComponent,
+    PromotionsComponent,
+    ManageAmenitiesComponent
+  ],
+  imports: [
+    BrowserModule,
+    CommonModule,
+    FormsModule,          // Enables ngModel template-driven forms
+    HttpClientModule,     // Enables HttpClient for API calls
+    AppRoutingModule
+  ],
+  providers: [
+    // Register the JWT interceptor globally
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true   // 'multi: true' means we can have multiple interceptors
+    }
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\environments\environment.prod.ts =====
+
+// Production environment settings
+export const environment = {
+  production: true,
+  apiUrl: 'https://your-production-api.com/api'  // Change this before deploying
+};
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\environments\environment.ts =====
+
+// Development environment settings
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:5055/api'   // Updated to match backend port
+};
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\index.html =====
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StayEase - Hotel Booking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="StayEase - Find and book the best hotels at the best prices. Secure, fast, and easy hotel reservations online.">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
+
+
+
+===== FILE: C:\hackathon\hotel-booking-frontend\src\main.ts =====
+
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+
+import { AppModule } from './app/app.module';
+
+
+platformBrowserDynamic().bootstrapModule(AppModule)
+  .catch(err => console.error(err));
+
