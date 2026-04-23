@@ -27,7 +27,7 @@ export class ManageRoomsComponent implements OnInit {
   constructor(
     private roomService: RoomService,
     private hotelService: HotelService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadRooms();
@@ -131,8 +131,14 @@ export class ManageRoomsComponent implements OnInit {
           this.showForm = false;
           this.loadRooms();
         },
-        error: () => {
-          this.errorMessage = 'Failed to create room.';
+        error: (err) => {                                                    // ✅ add `err`
+          if (err.status === 409) {
+            this.errorMessage = 'Room number already exists in this hotel.'; // ✅ 409 Conflict
+          } else if (err.status === 400) {
+            this.errorMessage = 'Invalid hotel selected.';                   // ✅ 400 Bad Request
+          } else {
+            this.errorMessage = 'Failed to create room.';                    // fallback
+          }
         }
       });
     }
