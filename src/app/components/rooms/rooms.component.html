@@ -25,7 +25,7 @@
           class="room-image" 
         />
         <div class="room-price-tag">
-          ${{ room.pricePerNight }}<span>/night</span>
+          ${{ room.price }}<span>/night</span>
         </div>
       </div>
 
@@ -40,11 +40,11 @@
         <div class="room-meta">
           <div class="meta-item">
             <span class="icon">👥</span>
-            <span>Max {{ room.maxOccupancy }} Guests</span>
+            <span>Capacity: {{ room.capacity }} Guests</span>
           </div>
           <div class="meta-item">
             <span class="status-indicator" [class.available]="room.isAvailable"></span>
-            <span>{{ room.isAvailable ? 'Available Now' : 'Currently Booked' }}</span>
+            <span>{{ room.isAvailable ? 'Available' : 'Booked' }}</span>
           </div>
         </div>
 

@@ -10,8 +10,8 @@
       <img [src]="room.imageUrl || 'assets/room-placeholder.jpg'" [alt]="room.roomType" class="summary-image" />
       <h3>Room {{ room.roomNumber }} — {{ room.roomType }}</h3>
       <p>{{ room.description }}</p>
-      <p>👥 Max {{ room.maxOccupancy }} guests</p>
-      <p class="price-per-night">💰 ${{ room.pricePerNight }} / night</p>
+      <p>👥 Max {{ room.capacity }} guests</p>
+      <p class="price-per-night">💰 ${{ room.price }} / night</p>
 
       <!-- Total amount display -->
       <div class="total-box" *ngIf="nights > 0">
@@ -30,26 +30,41 @@
 
       <form #bookingForm="ngForm" (ngSubmit)="onBook()">
 
-        <div class="form-group">
-          <label for="checkIn">Check-In Date</label>
-          <input
-            type="date"
-            id="checkIn"
-            name="checkIn"
-            [(ngModel)]="bookingData.checkInDate"
-            (change)="calculateTotal()"
-            required
-          />
+        <div class="form-row">
+          <div class="form-group">
+            <label for="checkIn">Check-In Date</label>
+            <input
+              type="date"
+              id="checkIn"
+              name="checkIn"
+              [(ngModel)]="bookingData.checkInDate"
+              (change)="calculateTotal()"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="checkOut">Check-Out Date</label>
+            <input
+              type="date"
+              id="checkOut"
+              name="checkOut"
+              [(ngModel)]="bookingData.checkOutDate"
+              (change)="calculateTotal()"
+              required
+            />
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="checkOut">Check-Out Date</label>
+          <label for="guests">Number of Guests</label>
           <input
-            type="date"
-            id="checkOut"
-            name="checkOut"
-            [(ngModel)]="bookingData.checkOutDate"
-            (change)="calculateTotal()"
+            type="number"
+            id="guests"
+            name="guests"
+            [(ngModel)]="bookingData.numberOfGuests"
+            min="1"
+            [max]="room?.capacity || 1"
             required
           />
         </div>
@@ -60,7 +75,7 @@
             id="specialRequests"
             name="specialRequests"
             [(ngModel)]="bookingData.specialRequests"
-            rows="3"
+            rows="2"
             placeholder="Late check-in, extra pillows, etc."
           ></textarea>
         </div>

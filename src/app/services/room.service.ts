@@ -25,17 +25,16 @@ export class RoomService {
   // 🔄 Normalize response
   private mapRoom(r: any): Room {
     return {
-      id: r.id,
-      hotelId: r.hotelId || 0,
-      hotelName: r.hotelName || '',
-      roomNumber: r.roomNumber || '',
-      roomType: r.roomType,
-      pricePerNight: Number(r.price ?? r.Price ?? r.pricePerNight ?? r.PricePerNight ?? 0),
-      maxOccupancy: Number(r.capacity ?? r.Capacity ?? r.maxOccupancy ?? r.MaxOccupancy ?? 1),
-      description: r.description || '',
-      features: r.features || '',
-      imageUrl: r.imageUrl || '',
-      isAvailable: r.isAvailable
+      id: r.id || r.Id,
+      hotelId: r.hotelId || r.HotelId || 0,
+      hotelName: r.hotelName || r.HotelName || '',
+      roomNumber: r.roomNumber || r.RoomNumber || '',
+      roomType: r.roomType || r.RoomType,
+      price: Number(r.price ?? r.Price ?? r.pricePerNight ?? r.PricePerNight ?? 0),
+      capacity: Number(r.capacity ?? r.Capacity ?? r.maxOccupancy ?? r.MaxOccupancy ?? 1),
+      description: r.description || r.Description || '',
+      imageUrl: r.imageUrl || r.ImageUrl || '',
+      isAvailable: r.isAvailable ?? r.IsAvailable
     };
   }
 
@@ -64,24 +63,14 @@ export class RoomService {
 
   // ✅ Create room
   createRoom(room: CreateRoom): Observable<Room> {
-    const payload = {
-      ...room,
-      price: room.pricePerNight,
-      capacity: room.maxOccupancy
-    };
-    return this.http.post<Room>(this.roomsUrl, payload, {
+    return this.http.post<Room>(this.roomsUrl, room, {
       headers: this.getHeaders()
     });
   }
 
   // ✅ Update room
   updateRoom(roomId: number, room: CreateRoom): Observable<Room> {
-    const payload = {
-      ...room,
-      price: room.pricePerNight,
-      capacity: room.maxOccupancy
-    };
-    return this.http.put<Room>(`${this.roomsUrl}/${roomId}`, payload, {
+    return this.http.put<Room>(`${this.roomsUrl}/${roomId}`, room, {
       headers: this.getHeaders()
     });
   }

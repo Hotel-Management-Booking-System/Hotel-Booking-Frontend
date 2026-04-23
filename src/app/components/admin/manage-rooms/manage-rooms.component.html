@@ -45,22 +45,17 @@
       <div class="form-row">
         <div class="form-group">
           <label>Price Per Night ($)</label>
-          <input type="number" name="pricePerNight" [(ngModel)]="roomForm.pricePerNight" min="0" required />
+          <input type="number" name="price" [(ngModel)]="roomForm.price" min="0" required />
         </div>
         <div class="form-group">
-          <label>Max Occupancy</label>
-          <input type="number" name="maxOccupancy" [(ngModel)]="roomForm.maxOccupancy" min="1" required />
+          <label>Capacity</label>
+          <input type="number" name="capacity" [(ngModel)]="roomForm.capacity" min="1" required />
         </div>
       </div>
 
       <div class="form-group">
         <label>Description</label>
         <textarea name="description" [(ngModel)]="roomForm.description" rows="2" placeholder="Room details..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Features (comma-separated)</label>
-        <input type="text" name="features" [(ngModel)]="roomForm.features" placeholder="WiFi, AC, TV, Mini-bar" />
       </div>
 
       <div class="form-group">
@@ -91,8 +86,8 @@
           <th>Hotel</th>
           <th>Room No.</th>
           <th>Type</th>
-          <th>Price/Night</th>
-          <th>Occupancy</th>
+          <th>Price</th>
+          <th>Capacity</th>
           <th>Available</th>
           <th>Actions</th>
         </tr>
@@ -103,8 +98,8 @@
           <td>{{ room.hotelName || room.hotelId }}</td>
           <td>{{ room.roomNumber }}</td>
           <td><span class="badge">{{ room.roomType }}</span></td>
-          <td>${{ room.pricePerNight }}</td>
-          <td>{{ room.maxOccupancy }}</td>
+          <td>${{ room.price }}</td>
+          <td>{{ room.capacity }}</td>
           <td>
             <span class="badge badge-success" *ngIf="room.isAvailable">Yes</span>
             <span class="badge badge-danger" *ngIf="!room.isAvailable">No</span>
