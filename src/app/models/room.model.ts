@@ -4,11 +4,10 @@ export interface Room {
   hotelId: number;
   hotelName: string;
   roomNumber: string;
-  roomType: string;         // e.g. Single, Double, Suite
-  pricePerNight: number;
-  maxOccupancy: number;
+  roomType: string;
+  price: number;            // Matches 'Price' in backend
+  capacity: number;         // Matches 'Capacity' in backend
   description: string;
-  features: string;         // Backend uses comma-separated string
   imageUrl: string;
   isAvailable: boolean;
 }
@@ -18,10 +17,9 @@ export interface CreateRoom {
   hotelId: number;
   roomNumber: string;
   roomType: string;
-  pricePerNight: number;
-  maxOccupancy: number;
+  price: number;
+  capacity: number;
   description: string;
-  features: string;
   imageUrl: string;
   isAvailable: boolean;
 }

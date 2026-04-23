@@ -39,10 +39,9 @@ export class ManageRoomsComponent implements OnInit {
       hotelId: 0,
       roomNumber: '',
       roomType: '',
-      pricePerNight: 0,
-      maxOccupancy: 1,
+      price: 0,
+      capacity: 1,
       description: '',
-      features: '',
       imageUrl: '',
       isAvailable: true
     };
@@ -88,10 +87,9 @@ export class ManageRoomsComponent implements OnInit {
       hotelId: room.hotelId,
       roomNumber: room.roomNumber,
       roomType: room.roomType,
-      pricePerNight: room.pricePerNight,
-      maxOccupancy: room.maxOccupancy,
+      price: room.price,
+      capacity: room.capacity,
       description: room.description,
-      features: room.features,
       imageUrl: room.imageUrl,
       isAvailable: room.isAvailable
     };

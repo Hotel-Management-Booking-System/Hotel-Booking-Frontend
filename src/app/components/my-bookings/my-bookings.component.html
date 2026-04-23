@@ -45,8 +45,8 @@
       <div class="booking-card-footer">
         <span class="booking-date">Booked on: {{ (booking.createdAt | date:'shortDate') || 'Recently' }}</span>
         <div class="booking-actions">
-          <button class="btn btn-outline btn-sm" *ngIf="booking.status === 'Pending'" (click)="onCancelBooking(booking.id)">Cancel</button>
-          <button class="btn btn-primary btn-sm">View Details</button>
+          <button class="btn btn-outline btn-sm" *ngIf="booking.status !== 'Cancelled'" (click)="onCancelBooking(booking.id)">Cancel</button>
+          <button class="btn btn-primary btn-sm" (click)="onRebook(booking)">Rebook</button>
         </div>
       </div>
     </div>

@@ -4,11 +4,13 @@ export interface Booking {
   userId: number;
   userName?: string;
   roomId: number;
+  hotelId?: number;
   roomNumber?: string;
   hotelName?: string;
   checkInDate: string;      // ISO date string
   checkOutDate: string;     // ISO date string
   totalAmount: number;
+  numberOfGuests: number;
   status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
   specialRequests?: string;
   createdAt?: string;
@@ -20,8 +22,9 @@ export interface CreateBooking {
   roomId: number;
   checkInDate: string;
   checkOutDate: string;
+  numberOfGuests: number;
   specialRequests?: string;
-  promotionId?: number;
+  promotionCode?: string;
 }
 
 // Used when updating booking status (admin)

@@ -22,11 +22,13 @@ export class BookingService {
       userId: b.userId || b.UserId || b.user?.id || b.user?.userId || b.User?.Id,
       userName: b.userName || b.UserName || b.user?.fullName || b.user?.name || b.User?.FullName,
       roomId: b.roomId || b.RoomId || b.room?.id || b.Room?.Id,
+      hotelId: b.hotelId || b.HotelId || b.room?.hotelId || b.Room?.HotelId,
       roomNumber: b.roomNumber || b.RoomNumber || b.room?.roomNumber || b.Room?.RoomNumber,
       hotelName: b.hotelName || b.HotelName || b.hotel?.name || b.Hotel?.Name,
       checkInDate: b.checkInDate || b.CheckInDate,
       checkOutDate: b.checkOutDate || b.CheckOutDate,
       totalAmount: Number(b.totalAmount ?? b.TotalAmount ?? b.price ?? b.Price ?? b.totalPrice ?? b.TotalPrice ?? 0),
+      numberOfGuests: b.numberOfGuests || b.NumberOfGuests || 0,
       status: b.status || b.Status || 'Pending',
       specialRequests: b.specialRequests || b.SpecialRequests,
       createdAt: b.createdAt || b.CreatedAt

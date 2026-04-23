@@ -20,8 +20,9 @@ export class BookingsComponent implements OnInit {
     roomId: 0,
     checkInDate: '',
     checkOutDate: '',
+    numberOfGuests: 1,
     specialRequests: '',
-    promotionId: undefined
+    promotionCode: undefined
   };
 
   room: Room | null = null;         // The room being booked
@@ -55,6 +56,7 @@ export class BookingsComponent implements OnInit {
     this.roomService.getRoomById(this.bookingData.roomId).subscribe({
       next: (data) => {
         this.room = data;
+        this.calculateTotal();
       },
       error: () => {
         this.errorMessage = 'Failed to load room details.';
@@ -73,7 +75,7 @@ export class BookingsComponent implements OnInit {
       this.nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
       if (this.nights > 0) {
-        this.totalAmount = this.nights * this.room.pricePerNight;
+        this.totalAmount = this.nights * this.room.price;
 
         // Apply discount if promo is applied
         if (this.appliedPromo) {
@@ -97,7 +99,7 @@ export class BookingsComponent implements OnInit {
     this.userService.validatePromoCode(this.promoCode).subscribe({
       next: (promo) => {
         this.appliedPromo = promo;
-        this.bookingData.promotionId = promo.id;
+        this.bookingData.promotionCode = promo.code;
         this.calculateTotal();  // Recalculate with discount
       },
       error: () => {
@@ -116,8 +118,12 @@ export class BookingsComponent implements OnInit {
       return;
     }
 
-    this.isLoading = true;
+    if (this.room && this.bookingData.numberOfGuests > this.room.capacity) {
+      this.errorMessage = `Number of guests exceeds room capacity (${this.room.capacity}).`;
+      return;
+    }
 
+    this.isLoading = true;
     this.bookingService.createBooking(this.bookingData).subscribe({
       next: () => {
         this.isLoading = false;

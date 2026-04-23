@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { BookingService } from '../../services/booking.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Booking } from '../../models/booking.model';
@@ -16,7 +17,10 @@ export class MyBookingsComponent implements OnInit {
   successMessage: string = '';
   isLoading: boolean = false;
 
-  constructor(private bookingService: BookingService) {}
+  constructor(
+    private bookingService: BookingService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadMyBookings();
@@ -46,8 +50,6 @@ export class MyBookingsComponent implements OnInit {
     if (!confirm('Are you sure you want to cancel this booking?')) return;
 
     this.isLoading = true;
-    // Note: This assumes updateBookingStatus can be used by users or a specific cancel endpoint exists.
-    // For now, using updateBookingStatus with 'Cancelled' status.
     this.bookingService.updateBookingStatus({ bookingId, status: 'Cancelled' }).subscribe({
       next: () => {
         this.successMessage = 'Booking cancelled successfully.';
@@ -60,4 +62,8 @@ export class MyBookingsComponent implements OnInit {
     });
   }
 
+  onRebook(booking: Booking): void {
+    const hotelId = booking.hotelId || 0;
+    this.router.navigate(['/bookings', hotelId, booking.roomId]); 
+  }
 }
